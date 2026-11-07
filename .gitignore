@@ -1,0 +1,25 @@
+# Python 缓存
+__pycache__/
+*.pyc
+
+# 浏览器截图、临时文件、日志
+.playwright-mcp/
+*.tmp
+*.log
+
+# 账号文件（SKILL 目录本来不放，万一放了也不上传；模板照常上传）
+.env
+.env.*
+dataforseo.txt
+!assets/templates/dataforseo.txt
+
+# AI 工具在这个目录里生成的本机设置
+.claude/
+.serena/
+
+# 系统和编辑器自动生成的
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/

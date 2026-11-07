@@ -1,0 +1,37 @@
+{
+  "site": null,
+  "url": null,
+  "name": null,
+  "industry": null,
+  "launch_date": null,
+  "description_zh": null,
+  "description_en": null,
+  "description_zh_long": null,
+  "description_en_long": null,
+  "contact_email": null,
+  "google_account": null,
+  "password": null,
+  "submitter_name": null,
+  "categories_en": [],
+  "categories_zh": [],
+  "tags_en": [],
+  "tags_zh": [],
+  "pricing_model": null,
+  "free_plan": null,
+  "platform": null,
+  "pages": {
+    "pricing": null,
+    "about": null,
+    "contact": null
+  },
+  "assets": {
+    "logo_png": null,
+    "logo_svg": null,
+    "screenshot": null,
+    "og_image": null
+  },
+  "inner_pages": [],
+  "country": null,
+  "city": null,
+  "notes": null
+}

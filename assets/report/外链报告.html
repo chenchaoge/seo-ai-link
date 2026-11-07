@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>外链报告</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%232a78d6'/%3E%3Cpath d='M10 13a5 5 0 0 0 7.07 0l2.12-2.12a5 5 0 0 0-7.07-7.07L11 4.93M14 11a5 5 0 0 0-7.07 0l-2.12 2.12a5 5 0 0 0 7.07 7.07L13 19.07' fill='none' stroke='white' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="data/report/style.css">
+<script>
+  // 深浅色默认跟系统，顶栏按钮可临时切换（不存到浏览器里）
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.dataset.theme = 'dark';
+  }
+</script>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10 13a5 5 0 0 0 7.07 0l3.54-3.54a5 5 0 0 0-7.07-7.07L12 3.93"/>
+          <path d="M14 11a5 5 0 0 0-7.07 0L3.39 14.54a5 5 0 0 0 7.07 7.07L12 20.07"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-title">外链报告</div>
+        <div class="brand-sub" id="generated-at"></div>
+      </div>
+    </div>
+    <nav class="view-switch" role="tablist" aria-label="切换报告">
+      <button type="button" role="tab" data-view="library" aria-selected="false">外链库</button>
+      <button type="button" role="tab" data-view="sites" aria-selected="false">各独立站发外链情况</button>
+    </nav>
+    <button type="button" class="theme-toggle" id="theme-toggle" title="切换深色 / 浅色" aria-label="切换深色或浅色">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<main>
+  <section id="view-library" class="view" hidden></section>
+  <section id="view-sites" class="view" hidden></section>
+</main>
+
+<footer id="footer"></footer>
+<div id="tooltip" class="tooltip" role="tooltip" hidden></div>
+
+<!-- 数据由 scripts/main.py 生成：菜单 5 生成到用户目录，菜单 8 刷新 SKILL 自带的这份，菜单 10 的本机网页每次打开现算；页面代码只读不改数据 -->
+<script src="data/report/report_data.js"></script>
+<script src="data/report/common.js"></script>
+<script src="data/report/charts.js"></script>
+<script src="data/report/table.js"></script>
+<script src="data/report/library.js"></script>
+<script src="data/report/sites.js"></script>
+<script src="data/report/app.js"></script>
+</body>
+</html>
