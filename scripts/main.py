@@ -1,5 +1,5 @@
 """
-外链可用性分析工具（菜单启动）
+seo-ai-link 主程序（菜单启动）
 查竞品页面/网站的外链（DataForSEO），逐个打开外链所在页面，自动预判能不能也给独立站留网址
 结论分 免费类 / 付费类 / 不可用 / 无法判断；无法判断的按 SKILL.md 的流程人工复核
 拉完外链先和外链库比对；每次整理结果把结论和所属行业（industries.json）并进用户外链库，并刷新这次分析的竞品专属库（处理清单）
@@ -56,7 +56,7 @@ MENU = [
     ("10", "打开外链报告网页（本机网页，打开、刷新就是最新数据，不用先跑菜单 5）"),
     ("0", "退出"),
 ]
-LOGGER_NAME = 'seo_external_link'
+LOGGER_NAME = 'seo_ai_link'
 LOG_FORMAT = '%(asctime)s - %(levelname)s - %(message)s'
 
 
@@ -76,7 +76,7 @@ def show_menu() -> str:
     """显示菜单，返回用户选择"""
     print()
     print("=" * 50)
-    print("外链可用性分析")
+    print("seo-ai-link")
     print("=" * 50)
     for key, text in MENU:
         print(f"{key}. {text}")

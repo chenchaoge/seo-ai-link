@@ -14,11 +14,11 @@
     { key: '其他原因', desc: '不符合收录条件、价值低等，看备注' },
   ];
   const HOME = '首页';
-  const WARN_CHECKS = 5;  // 复查到第 5 次就快要判未收录了，进度条变黄
+  const WARN_CHECKS = 5;  // 回访到第 5 次就快要判未收录了，进度条变黄
 
   const isSubmitted = (e) => Boolean(e.submitted_at) || SUBMITTED_STATUSES.includes(e.status);
   const submittedToday = (entries, today) => entries.filter((e) => R.dayKey(e.submitted_at) === today).length;  // 跟程序一样：submitted_at 是当天的才算
-  const includedDay = (e) => R.dayKey(e.included_at || e.submitted_at);  // 自建类没有复查记录，按发布当天算
+  const includedDay = (e) => R.dayKey(e.included_at || e.submitted_at);  // 自建类没有回访记录，按发布当天算
   const lastCheck = (e) => (e.checks.length ? e.checks[e.checks.length - 1] : null);
   const clipText = (text, n) => (text ? (text.length > n ? `${text.slice(0, n)}…` : text) : null);
   const daysText = (d) => (d === 0 ? '当天' : `${d} 天`);
@@ -87,7 +87,7 @@
     const actions = entries.filter((e) => ACTION_STATUSES.includes(e.status));
     return h('div', { class: 'kpis' },
       R.kpi('已拿到的外链', String(included.length), `dofollow ${rel.get('dofollow') || 0} · nofollow ${rel.get('nofollow') || 0} · 没记录 ${rel.get('没记录') || 0}`, { hero: true, unit: '个' }),
-      R.kpi('等对方审核', String(pending.length), toCheck ? `今天还有 ${toCheck} 个没复查` : '今天的复查都做完了', { color: 'var(--st-info)' }),
+      R.kpi('等对方审核', String(pending.length), toCheck ? `今天还有 ${toCheck} 个没回访` : '今天的回访都做完了', { color: 'var(--st-info)' }),
       R.kpi('收录率', R.pct(included.length, submitted), `提交过 ${submitted} 个，收录 ${included.length} 个`, { color: 'var(--st-good)' }),
       R.kpi('要人动手', String(actions.length), `${R.shortDate(today)} 已提交 ${todayN} 个，每天最多 ${limit} 个`, { color: 'var(--st-warn)' }),
       R.kpi('跳过', String(by.get('跳过') || 0), `台账一共 ${entries.length} 个外链网站`, { color: 'var(--st-skip)' }));
@@ -134,7 +134,7 @@
       { name: '提交过', color: 'var(--st-info)', values: cumulative(sub) },
       { name: '已收录', color: 'var(--st-good)', values: cumulative(inc) },
     ];
-    return R.card('提交和收录随时间累计', '收录日期 = 每日复查第一次看到收录的那天；自建类没有复查，按发布当天算',
+    return R.card('提交和收录随时间累计', '收录日期 = 每日独立站外链回访第一次看到收录的那天；自建类没有回访，按发布当天算',
       C.lineChart({
         dates, series, label: '提交和收录累计数量',
         tipSub: (i) => {
@@ -166,7 +166,7 @@
     const withDays = rows.filter((e) => e.included_at && e.submitted_at).map((e) => R.daysBetween(e.submitted_at, e.included_at));
     const avg = withDays.length ? (withDays.reduce((a, b) => a + b, 0) / withDays.length).toFixed(1) : null;
     return h('div', null,
-      R.sectionTitle('已拿到的外链', avg ? `从提交到复查发现收录，平均 ${avg} 天（复查每天一次，实际收录可能更早）` : '对方已经放上链接的外链网站'),
+      R.sectionTitle('已拿到的外链', avg ? `从提交到回访发现收录，平均 ${avg} 天（回访每天一次，实际收录可能更早）` : '对方已经放上链接的外链网站'),
       h('div', { class: 'card' }, tbl.el));
   }
 
@@ -180,12 +180,12 @@
       columns: [
         { key: 'site', label: '外链网站', cls: 'site', sort: (e) => e.site, firstDir: 'asc' },
         { key: 'wait', label: '等了几天', cls: 'num', sort: (e) => R.daysBetween(e.submitted_at, today), render: (e) => daysText(R.daysBetween(e.submitted_at, today)) },
-        { key: 'checks', label: '复查进度', sort: (e) => e.checks.length, render: (e) => C.meter(e.checks.length, R.MAX_CHECKS, WARN_CHECKS) },
-        { key: 'today', label: '今天', cls: 'nowrap', sort: (e) => (R.dayKey(e.checked_at) === today ? 1 : 0), render: (e) => (R.dayKey(e.submitted_at) >= today ? R.badge('今天刚交', null, true) : R.dayKey(e.checked_at) === today ? R.badge('已复查', 'var(--st-good)') : R.badge('待复查', 'var(--st-warn)')) },
+        { key: 'checks', label: '回访进度', sort: (e) => e.checks.length, render: (e) => C.meter(e.checks.length, R.MAX_CHECKS, WARN_CHECKS) },
+        { key: 'today', label: '今天', cls: 'nowrap', sort: (e) => (R.dayKey(e.checked_at) === today ? 1 : 0), render: (e) => (R.dayKey(e.submitted_at) >= today ? R.badge('今天刚交', null, true) : R.dayKey(e.checked_at) === today ? R.badge('已回访', 'var(--st-good)') : R.badge('待回访', 'var(--st-warn)')) },
       ],
       detail: (e) => checksDetail(e),
     });
-    return R.card('等对方审核的外链网站', `每天复查一次，查满 ${R.MAX_CHECKS} 次还没收录就改成未收录；点一行看每次复查看到了什么`, tbl.el);
+    return R.card('等对方审核的外链网站', `每天回访一次，查满 ${R.MAX_CHECKS} 次还没收录就改成未收录；点一行看每次回访看到了什么`, tbl.el);
   }
 
   function checksDetail(e) {
@@ -194,8 +194,8 @@
       ['提交方式', e.method],
       ['提交入口', e.submit_url ? R.link(e.submit_url) : null],
       ['提交时间', e.submitted_at],
-      ['最近一次', last ? `${last.at} ${last.result}` : '还没复查过'],
-      ['复查记录', e.checks.length ? h('ul', { class: 'timeline' }, e.checks.map((c) => h('li', null,
+      ['最近一次', last ? `${last.at} ${last.result}` : '还没回访过'],
+      ['回访记录', e.checks.length ? h('ul', { class: 'timeline' }, e.checks.map((c) => h('li', null,
         h('span', { class: 't' }, c.at), R.badge(c.result, c.result === '已收录' ? 'var(--st-good)' : c.result === '被拒' ? 'var(--st-bad)' : 'var(--st-skip)'),
         h('span', { class: 'e' }, c.evidence || '')))) : null],
       ['备注', e.note],
@@ -386,7 +386,7 @@
         { key: 'type', label: '业务类型', cls: 'nowrap', render: (e) => e.site_type },
         { key: 'method', label: '提交方式', cls: 'nowrap', render: (e) => e.method },
         { key: 'sub', label: '提交时间', cls: 'num', sort: (e) => e.submitted_at, render: (e) => (e.submitted_at ? String(e.submitted_at).slice(0, 16) : null) },
-        { key: 'checks', label: '复查', cls: 'num', sort: (e) => e.checks.length, render: (e) => (e.checks.length ? `${e.checks.length} 次` : null) },
+        { key: 'checks', label: '回访', cls: 'num', sort: (e) => e.checks.length, render: (e) => (e.checks.length ? `${e.checks.length} 次` : null) },
         { key: 'rel', label: '链接属性', cls: 'nowrap', render: (e) => (e.status === '已收录' ? R.relBadge(e.rel) : null) },
         { key: 'target', label: '链到', cls: 'nowrap', render: (e) => (isSubmitted(e) ? targetLabel(e.target_url, site) : null) },
       ],
@@ -398,7 +398,7 @@
         ['备注', e.note],
         ['从哪来', e.sources.join('、')],
         ['进台账', e.added_at],
-        ['复查记录', e.checks.length ? h('ul', { class: 'timeline' }, e.checks.map((c) => h('li', null,
+        ['回访记录', e.checks.length ? h('ul', { class: 'timeline' }, e.checks.map((c) => h('li', null,
           h('span', { class: 't' }, c.at), R.badge(c.result, c.result === '已收录' ? 'var(--st-good)' : 'var(--st-skip)'), h('span', { class: 'e' }, c.evidence || '')))) : null],
       ]),
     });
@@ -417,7 +417,7 @@
       tbl.update(rows);
     }
     refresh();
-    return h('div', null, R.sectionTitle('台账完整清单', '这个独立站要发外链的所有外链网站；点一行看备注和每次复查记录'), h('div', { class: 'card' }, filters, tbl.el));
+    return h('div', null, R.sectionTitle('台账完整清单', '这个独立站要发外链的所有外链网站；点一行看备注和每次回访记录'), h('div', { class: 'card' }, filters, tbl.el));
   }
 
   function renderSites(root, data, siteKey, onSwitch) {
@@ -435,7 +435,7 @@
     root.appendChild(h('div', { class: 'grid grid-2' }, statusCard(entries), funnelCard(entries)));
     root.appendChild(h('div', { style: { marginTop: '18px' } }, trendCard(entries, data.today)));
     root.appendChild(includedSection(site, entries));
-    root.appendChild(R.sectionTitle('等审核和要动手的', '每日复查看这里'));
+    root.appendChild(R.sectionTitle('等审核和要动手的', '每日独立站外链回访看这里'));
     root.appendChild(h('div', { class: 'grid grid-7-5' }, pendingCard(entries, data.today), actionCard(entries)));
     root.appendChild(R.sectionTitle('按发外链原则看', `先发契合赛道、免费、dofollow 的；剩下的免费先于付费、dofollow 先于 nofollow，其他赛道的先给用户看；赛道关系按这个独立站的所属行业（${site.industry || '还没标行业'}）算`));
     root.appendChild(h('div', { class: 'grid grid-2' }, ledgerTierCard(entries, data.tiers, data.daily_limit), notSentTierCard(site, data.library, data.tiers)));

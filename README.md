@@ -1,6 +1,6 @@
-# seo-ai-link
+# seo-ai-link v0.91 更新日期：1107
 
-[![Version](https://img.shields.io/badge/version-0.9-2563EB.svg?style=flat-square)](VERSION)
+[![Version](https://img.shields.io/badge/version-0.91-2563EB.svg?style=flat-square)](VERSION)
 [![License](https://img.shields.io/badge/license-All%20Rights%20Reserved-16A34A.svg?style=flat-square)](LICENSE)
 
 竞品外链挖掘 → 外链库管理 → AI 自动发外链 → 收录回访，全流程配有可视化报表
@@ -37,8 +37,6 @@ seo-ai-link 不提供批量群发、链接农场（Link Farm）、站群（PBN�
 
 - 博客评论群发：竞品链接写在文章正文里的，评论框不算提交入口；与独立站无关的文章不留言；评论者名字只链到平台个人主页的，留不下外链
 - 镜像站、转载站发帖：自动搬运的镜像帖、转载站内容无人浏览，链接多为 nofollow
-- 付费新闻稿、付费投稿换 nofollow 链接：成本高、收益低
-- 社区软广回帖：新账号的第一条回复就带陌生链接，基本会被当作广告删除
 - 提交从未被合并过的 PR：例如外人 PR 从未被采纳的 awesome 清单
 - 需要安装第三方 App、浏览器插件或命令行工具才能提交的
 - 需要关注微信公众号、添加站长微信、发朋友圈换取收录的
@@ -47,7 +45,7 @@ seo-ai-link 不提供批量群发、链接农场（Link Farm）、站群（PBN�
 
 ## 内置外链库
 
-当前内置外链库以 AI 产品工具和科技赛道为主。v0.9 共有可用外链网站（免费类 + 付费类）206 个，按所属行业分布如下：
+当前内置外链库以 AI 产品工具和科技赛道为主。v0.91 共有可用外链网站（免费类 + 付费类）206 个，按所属行业分布如下：
 
 | 所属行业 | 可用 | 其中免费 |
 | --- | --- | --- |
@@ -110,11 +108,14 @@ git clone https://github.com/chenchaoge/seo-ai-link.git ~/.claude/skills/seo-ai-
 
 **第 2 步：告诉 AI 任务**
 
-```text
-用 seo-ai-link 帮我发外链，我的网站是 xxx.com，竞品是 yyy.com
-```
+每次从下面四件事里选一件告诉 AI：
 
-首次使用时，AI 会先检查运行环境、安装缺少的依赖，再请用户指定一个存放用户档案的文件夹
+- `挖掘竞品网站的外链`
+- `整理我的外链库`
+- `帮我的独立站发外链`
+- `帮我做外链回访`
+
+首次使用时，不管选哪件，AI 都会先检查运行环境、安装缺少的依赖、介绍这个 Skill，再请用户指定一个存放用户档案的文件夹；之后要用到独立站、竞品网址时，AI 会提示用户给出
 
 **第 3 步：在同一个对话中继续**
 

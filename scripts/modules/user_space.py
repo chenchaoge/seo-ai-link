@@ -167,6 +167,7 @@ def init_user_space(user_dir: Path) -> UserSpace:
     settings.json 没另指 DataForSEO 账号文件时，再拷一份空的 data/dataforseo.txt 等用户自己填；
     最后把位置记进电脑用户文件夹的 .seo-external-link.json。目录里已有的东西一律不动
     """
+    user_dir = Path(user_dir).expanduser().resolve()  # 记绝对路径：给的是相对路径，换个目录跑程序也找得到
     space = UserSpace(user_dir)
     for path in (space.library_dir, space.sites_dir, space.analyses_dir):
         path.mkdir(parents=True, exist_ok=True)

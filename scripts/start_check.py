@@ -8,7 +8,7 @@
 4. Node.js 和 Chrome：浏览器工具 Playwright MCP 要 Node.js 18 或更新，并且用电脑上装的 Chrome 开一个单独的档案；
    没装只报告、不代装（装法每个系统只有一种，见 SKILL.md「开工检查」）
 5. 用户目录：设置了没有、能不能写进去、DataForSEO 账号填了没有（只看填没填，不打印、不去验证）
-6. 复查提醒：各独立站今天该每日复查的外链网站，到期了 AI 先问用户，用户同意才跑
+6. 回访提醒：各独立站今天该每日独立站外链回访的外链网站，到期了 AI 先问用户，用户同意才跑
 第 1～4 项只用 Python 自带的库，缺库也能跑；第 5、6 项要用到 SKILL 自己的模块，库齐了才查
 """
 
@@ -54,7 +54,7 @@ PIP_ERROR_LINES = 8  # 装不上时打印 pip 报错的最后几行
 PIP_MIRROR = 'https://pypi.tuna.tsinghua.edu.cn/simple'  # pip 国内镜像（清华）：官方源连不上或装不上时用
 NPM_MIRROR = 'https://registry.npmmirror.com'  # npm 国内镜像：官方源连不上时 MCP 配置里加环境变量 npm_config_registry
 NODE_MIRROR = NPM_MIRROR + '/-/binary/node/latest-v24.x/'  # Node.js 安装包的国内镜像（nodejs.org 的镜像）
-RERUN_FLAG = 'SEO_EXTERNAL_LINK_START_CHECK_RERUN'  # 装完库重跑时带上，重跑那次不再装、不再重跑
+RERUN_FLAG = 'SEO_AI_LINK_START_CHECK_RERUN'  # 装完库重跑时带上，重跑那次不再装、不再重跑
 NETWORK_TIMEOUT = 15
 NET_PIP, NET_NPM, NET_DATAFORSEO, NET_WEB = '装 Python 库', '装浏览器工具 Playwright MCP（npm）', '菜单 1 查竞品外链（DataForSEO）', '打开外链网站'
 NETWORK_TARGETS = [  # (用来干什么, 官方地址, 国内镜像或 None)；对方回任何 HTTP 状态码都算连得上
@@ -64,7 +64,7 @@ NETWORK_TARGETS = [  # (用来干什么, 官方地址, 国内镜像或 None)；�
     (NET_WEB, 'https://example.com/', None),  # 拿一个普通网站代表
 ]
 OFFICIAL, MIRROR = '官方源', '国内镜像'  # 联网检查的结果：用哪个源；None = 都连不上
-USER_AGENT = 'seo-external-link-start-check'
+USER_AGENT = 'seo-ai-link-start-check'
 NODE_MIN_MAJOR = 18  # Playwright MCP 的要求
 NODE_INSTALL = {  # 每个系统只有一种装法；官方源下载失败才用镜像。winget 那条 AI 可以代跑，Mac 的安装包要用户自己双击装
     'Windows': f'跑 winget install OpenJS.NodeJS.LTS；winget 下载失败就从 {NODE_MIRROR} 下载 x64 的 .msi 装',
@@ -297,17 +297,27 @@ def check_user_space(problems: List[str]) -> Optional[UserSpace]:
 
 
 def check_recheck_due(space: UserSpace, problems: List[str]):
-    """复查提醒：各独立站今天该每日复查的外链网站"""
+    """回访提醒：各独立站今天该每日独立站外链回访的外链网站"""
     day = today_text()
     due = {site: recheck_due(load_ledger(space.ledger_path(site)), day) for site in space.independent_sites()}
     due = {site: sites for site, sites in due.items() if sites}
     if not due:
-        report(PASS, f"每日复查：今天（{day}）没有要复查的", problems)
+        report(PASS, f"每日独立站外链回访：今天（{day}）没有要回访的", problems)
         return
-    report(NOTE, f"每日复查到期：今天（{day}）有 {sum(len(s) for s in due.values())} 个外链网站该复查了", problems)
+    report(NOTE, f"每日独立站外链回访到期：今天（{day}）有 {sum(len(s) for s in due.values())} 个外链网站该回访了", problems)
     for site, sites in due.items():
         print(f"    {site}：{len(sites)} 个（{'、'.join(sites)}）")
-    print("    先问用户要不要现在复查，用户同意就按 SKILL.md 第6步跑一遍；不同意就接着做用户要做的事")
+    print("    先问用户要不要现在回访，用户同意就按 SKILL.md 第6步跑一遍；不同意就接着做用户要做的事")
+
+
+def check_user_files(problems: List[str]):
+    """用户目录和回访提醒；人工改过的文件（位置文件、设置、台账）写坏了或读不了，记成要处理，不让检查中断"""
+    try:
+        space = check_user_space(problems)
+        if space:
+            check_recheck_due(space, problems)
+    except (ValueError, OSError) as e:
+        report(TODO, f"用户目录里的文件读不了：{e}（照报错里的文件和行号改好再查）", problems)
 
 
 def main():
@@ -326,13 +336,11 @@ def main():
     check_node(problems)
     check_chrome(problems)
     if MODULE_ERROR and missing_packages(required_packages()):
-        print(f"{NOTE} 用户目录和复查提醒要等 Python 库装好才能查")
+        print(f"{NOTE} 用户目录和回访提醒要等 Python 库装好才能查")
     elif MODULE_ERROR:  # 库都在还导入失败，是 SKILL 自己的代码有问题
         report(TODO, f"SKILL 程序导入出错：{MODULE_ERROR}", problems)
     else:
-        space = check_user_space(problems)
-        if space:
-            check_recheck_due(space, problems)
+        check_user_files(problems)
     if problems:
         print(f"\n开工检查：有 {len(problems)} 项要处理（见上面标{TODO}的）")
         sys.exit(1)

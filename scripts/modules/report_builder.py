@@ -80,7 +80,7 @@ def collect_provenance(analyses_dir: Path) -> Dict[str, dict]:
 
 
 def _first_included(checks: List[dict]) -> Optional[dict]:
-    """第一次查到已收录的那条复查记录"""
+    """第一次查到已收录的那条回访记录"""
     return next((c for c in checks if c.get('result') == STATUS_INCLUDED), None)
 
 

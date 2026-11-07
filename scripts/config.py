@@ -1,5 +1,5 @@
 """
-外链可用性分析工具配置（只放 SKILL 自己的设置，跟用户无关）
+seo-ai-link 配置（只放 SKILL 自己的设置，跟用户无关）
 查竞品页面/网站的外链（DataForSEO），再逐个打开外链所在页面，判断能不能也给独立站留网址
 用户自己的设置（当前独立站、默认竞品、DataForSEO 账号文件）在用户目录的 data/settings.json，见 modules/user_space.py
 """

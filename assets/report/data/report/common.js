@@ -61,7 +61,7 @@
   const GROUPS = ['直接提交', '注册账号提交'];
   const SITE_TYPES = ['导航与产品发布类', '社区论坛类', '自建类', '要挂回链或徽章'];
   const UNSET = '还没分类';
-  const MAX_CHECKS = 7; // 每日复查查满 7 次还没收录就算未收录
+  const MAX_CHECKS = 7; // 每日独立站外链回访查满 7 次还没收录就算未收录
   // 所属行业和赛道关系：清单、赛道大类、赛道关系的顺序都来自数据文件（industries、tracks），这里只放没标时的说法
   const INDUSTRY_UNSET = '行业未标';
   const industryOf = (item) => item.industry || INDUSTRY_UNSET;

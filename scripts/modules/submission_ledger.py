@@ -20,11 +20,11 @@ from modules.result_store import load_hand_edited_json
 
 LEDGER_VERDICTS = [VERDICT_FREE]  # 免费类的外链网站进台账
 STATUS_PENDING = '待提交'
-STATUS_SUBMITTED = '已提交'  # 等对方审核，每日复查查的就是这个状态
+STATUS_SUBMITTED = '已提交'  # 等对方审核，每日独立站外链回访查的就是这个状态
 # industry = 外链网站的所属行业（整理结果时跟外链库同步），group = 发外链方式，site_type = 业务类型；
 # user_confirmed = 用户看过、定了要发（其他赛道的要用户点头才发，见 modules/submit_policy.py）；
-# checked_at = 最后一次每日复查的时间；
-# checks = 每次复查一条记录（at、result、listing_url、rel、evidence），提交后第二天起每天查一次，收录、被拒或查满 7 次后不再查
+# checked_at = 最后一次每日独立站外链回访的时间；
+# checks = 每次回访一条记录（at、result、listing_url、rel、evidence），提交后第二天起每天查一次，收录、被拒或查满 7 次后不再查
 LEDGER_FIELDS = ['status', 'verdict', 'industry', 'user_confirmed', 'group', 'site_type', 'check', 'method',
                  'submit_url', 'hint', 'sources', 'source_pages', 'added_at', 'submitted_at', 'checked_at', 'checks',
                  'listing_url', 'note']
@@ -137,8 +137,8 @@ def sync_industries(ledger: Dict[str, dict], industries: Dict[str, Optional[str]
 
 def recheck_due(ledger: Dict[str, dict], day: str) -> List[str]:
     """
-    这一天该每日复查的外链网站：已提交、提交日早于这一天、这一天还没复查过
-    （跟报告「今天还有几个没复查」同一规则，见 assets/report/data/report/sites.js）
+    这一天该每日独立站外链回访的外链网站：已提交、提交日早于这一天、这一天还没回访过
+    （跟报告「今天还有几个没回访」同一规则，见 assets/report/data/report/sites.js）
 
     Args:
         day: 'YYYY-MM-DD'

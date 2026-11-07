@@ -198,7 +198,7 @@
     return holder;
   }
 
-  // 进度条：复查了几次 / 7 次
+  // 进度条：回访了几次 / 7 次
   function meter(value, max, warnAt) {
     const ratio = Math.min(1, value / max);
     return h('div', { class: 'meter' },
