@@ -289,7 +289,7 @@ DataForSEO API：一个国外专业的SEO类的API服务商，挖竞品网站的
 - 先看那个工具的官方接口文档和收费，跟用户说清查一个竞品大概花多少，用户同意再改。
 - 只改拉外链这一段：`scripts/modules/backlink_fetcher.py`（拉外链）、`scripts/lib/client.py`（连接接口）、`scripts/config.py` 的 BACKLINKS_CONFIG、`scripts/modules/user_space.py` 的账号键名 ENV_KEYS 和账号文件模板 `assets/templates/dataforseo.txt`、`scripts/start_check.py` 联网检查连的网址，提到 DataForSEO 的说明文字一起改。
 - 拉回来的每条外链照旧转成 backlink_fetcher.py 里 KEEP_FIELDS 那些字段名，对方没有的字段填 null。这样后面的预判、复核、外链库、报告都不用动。
-- 改完跑相关测试，再拿一个竞品试跑一次（花钱，先问用户）。
+- 改完拿一个竞品试跑一次（花钱，先问用户）。
 
 ## 第2步：AI 用浏览器复核「无法判断」的外链网站
 
