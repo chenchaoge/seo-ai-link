@@ -6,7 +6,7 @@
 3. Python 库：requirements.txt 里缺的，用跑这个脚本的同一个 Python 自动装（pip）：官方源装不上自动换国内镜像再装一次；
    装好后自动重跑一遍检查
 4. Node.js 和 Chrome：浏览器工具 Playwright MCP 要 Node.js 18 或更新，并且用电脑上装的 Chrome 开一个单独的档案；
-   没装只报告、不代装（装法每个系统只有一种，见 SKILL.md「开工检查」）
+   没装只报告、不代装（装法每个系统只有一种，见 references/setup.md「装软件」）
 5. 用户目录：设置了没有、能不能写进去、DataForSEO 账号填了没有（只看填没填，不打印、不去验证）
 6. 回访提醒：各独立站今天该每日独立站外链回访的外链网站，到期了 AI 先问用户，用户同意才跑
 第 1～4 项只用 Python 自带的库，缺库也能跑；第 5、6 项要用到 SKILL 自己的模块，库齐了才查
@@ -37,7 +37,9 @@ from config import SKILL_DIR, USER_CONFIG_FILE  # noqa: E402  config 只用 Pyth
 
 try:  # 下面这些要用到第三方库：缺库时先记下，装好库后重跑本脚本（新进程才认得刚装的库）
     import requests  # noqa: E402
-    from modules.submission_ledger import load_ledger, recheck_due  # noqa: E402
+    from modules.submission_ledger import (  # noqa: E402
+        load_ledger, missing_submit_evidence, recheck_due, unverified_submissions,
+    )
     from modules.submit_policy import today_text  # noqa: E402
     from modules.user_space import UserSpace, load_user_space  # noqa: E402
     MODULE_ERROR = None
@@ -145,7 +147,7 @@ def check_network(problems: List[str]) -> Dict[str, Optional[str]]:
     if not any(result.values()):
         print("    全都连不上：多半是平台没给命令联网权限（沙箱），请用户在平台设置里打开联网，或者电脑本身没网")
     if result[NET_NPM] == MIRROR:
-        print(f"    装 Playwright MCP 时在 MCP 配置里加环境变量 npm_config_registry={NPM_MIRROR}（见 SKILL.md 开工检查第 3 条）")
+        print(f"    装 Playwright MCP 时在 MCP 配置里加环境变量 npm_config_registry={NPM_MIRROR}（见 references/setup.md「浏览器工具：Playwright MCP」）")
     return result
 
 
@@ -282,7 +284,7 @@ def check_user_space(problems: List[str]) -> Optional[UserSpace]:
         if recorded:
             report(TODO, f"记的用户目录不在了：{recorded}（问用户现在放哪了，跑菜单 6 重新设置）", problems)
         else:
-            report(NOTE, f"还没设置用户目录：第一次用，按 SKILL.md「基础工作准备」做（位置会记在 {USER_CONFIG_FILE}）",
+            report(NOTE, f"还没设置用户目录：第一次用，按 references/setup.md「基础工作准备」做（位置会记在 {USER_CONFIG_FILE}）",
                    problems)
         return None
     if not can_write(space.root):
@@ -296,6 +298,12 @@ def check_user_space(problems: List[str]) -> Optional[UserSpace]:
     return space
 
 
+def _print_by_site(found: Dict[str, List[str]]):
+    """按独立站打印外链网站清单"""
+    for site, sites in found.items():
+        print(f"    {site}：{len(sites)} 个（{'、'.join(sites)}）")
+
+
 def check_recheck_due(space: UserSpace, problems: List[str]):
     """回访提醒：各独立站今天该每日独立站外链回访的外链网站"""
     day = today_text()
@@ -305,9 +313,25 @@ def check_recheck_due(space: UserSpace, problems: List[str]):
         report(PASS, f"每日独立站外链回访：今天（{day}）没有要回访的", problems)
         return
     report(NOTE, f"每日独立站外链回访到期：今天（{day}）有 {sum(len(s) for s in due.values())} 个外链网站该回访了", problems)
-    for site, sites in due.items():
-        print(f"    {site}：{len(sites)} 个（{'、'.join(sites)}）")
-    print("    先问用户要不要现在回访，用户同意就按 SKILL.md 第6步跑一遍；不同意就接着做用户要做的事")
+    _print_by_site(due)
+    print("    先问用户要不要现在回访，用户同意就按 references/revisit.md 跑一遍；不同意就接着做用户要做的事")
+
+
+def check_submit_proof(space: UserSpace, problems: List[str]):
+    """提交有没有确认交上：待核实的、已提交却没写证据的单独列出来（都没有就不打印）"""
+    ledgers = {site: load_ledger(space.ledger_path(site)) for site in space.independent_sites()}
+    unverified = {site: unverified_submissions(ledger) for site, ledger in ledgers.items()}
+    unverified = {site: sites for site, sites in unverified.items() if sites}
+    missing = {site: missing_submit_evidence(ledger) for site, ledger in ledgers.items()}
+    missing = {site: sites for site, sites in missing.items() if sites}
+    if unverified:
+        report(NOTE, f"提交待核实：{sum(len(s) for s in unverified.values())} 个外链网站提交时没能确认对方收下", problems)
+        _print_by_site(unverified)
+        print("    回访时先查提交在不在，按 references/revisit.md「待核实的先查提交在不在」处理")
+    if missing:
+        report(NOTE, f"已提交但没写交上的证据：{sum(len(s) for s in missing.values())} 个外链网站", problems)
+        _print_by_site(missing)
+        print("    按 references/submit.md「每个外链网站怎么做」第 5 条查一遍，补上 submit_evidence")
 
 
 def check_user_files(problems: List[str]):
@@ -316,6 +340,7 @@ def check_user_files(problems: List[str]):
         space = check_user_space(problems)
         if space:
             check_recheck_due(space, problems)
+            check_submit_proof(space, problems)
     except (ValueError, OSError) as e:
         report(TODO, f"用户目录里的文件读不了：{e}（照报错里的文件和行号改好再查）", problems)
 

@@ -46,11 +46,12 @@
     return h('div', { class: 'site-logo-fallback' }, site.name.slice(0, 1));
   }
 
-  function header() {
+  function header(site) {
     return h('div', { class: 'view-head' }, h('div', null,
       h('div', { class: 'eyebrow' }, '第二部分 · 各独立站发外链情况'),
       h('h1', { class: 'view-title' }, '每个独立站的外链做到哪一步了'),
-      h('p', { class: 'view-desc' }, '每个独立站用同一套报告：拿到了多少外链、哪些在等外链网站审核、哪些要人动手、跳过了哪些、外链库里还有哪些没发。点下面的独立站卡片切换。')));
+      h('p', { class: 'view-desc' }, '每个独立站用同一套报告：拿到了多少外链、哪些在等外链网站审核、哪些要人动手、跳过了哪些、外链库里还有哪些没发。点下面的独立站卡片切换。')),
+      site ? R.updatedBox(site.ledger_updated_at, site.update_note) : null);  // 日期 = ledger.json 文件的改动时间，备注 = AI 写的这次更新了什么
   }
 
   function siteTabs(sites, current, onSwitch) {
@@ -423,9 +424,9 @@
   function renderSites(root, data, siteKey, onSwitch) {
     const sites = data.independent_sites;
     root.textContent = '';
-    root.appendChild(header());
+    const site = sites.find((s) => s.site === siteKey) || sites[0];  // 没有独立站时是 undefined，开头就不显示日期
+    root.appendChild(header(site));
     if (!sites.length) { root.appendChild(R.empty('还没有任何独立站的提交台账')); return; }
-    const site = sites.find((s) => s.site === siteKey) || sites[0];
     const entries = site.entries;
     const libMap = new Map(data.library.map((s) => [s.site, s]));
     root.appendChild(siteTabs(sites, site, onSwitch));

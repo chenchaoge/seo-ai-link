@@ -24,10 +24,12 @@ STATUS_SUBMITTED = '已提交'  # 等对方审核，每日独立站外链回访�
 # industry = 外链网站的所属行业（整理结果时跟外链库同步），group = 发外链方式，site_type = 业务类型；
 # user_confirmed = 用户看过、定了要发（其他赛道的要用户点头才发，见 modules/submit_policy.py）；
 # checked_at = 最后一次每日独立站外链回访的时间；
+# submit_evidence = 提交时当场看到的交上的证据（待核实的写查过哪些办法、各看到什么）；
+# submit_unverified = true 表示能查的都查过还是没确认对方收下，回访时先查提交在不在（见 references/submit.md）；
 # checks = 每次回访一条记录（at、result、listing_url、rel、evidence），提交后第二天起每天查一次，收录、被拒或查满 7 次后不再查
 LEDGER_FIELDS = ['status', 'verdict', 'industry', 'user_confirmed', 'group', 'site_type', 'check', 'method',
-                 'submit_url', 'hint', 'sources', 'source_pages', 'added_at', 'submitted_at', 'checked_at', 'checks',
-                 'listing_url', 'note']
+                 'submit_url', 'hint', 'sources', 'source_pages', 'added_at', 'submitted_at', 'submit_evidence',
+                 'submit_unverified', 'checked_at', 'checks', 'listing_url', 'note']
 
 
 def load_ledger(path: Path) -> Dict[str, dict]:
@@ -52,9 +54,12 @@ def save_ledger(path: Path, ledger: Dict[str, dict]):
     path.parent.mkdir(parents=True, exist_ok=True)
     lines = [f"{json.dumps(site, ensure_ascii=False)}: {json.dumps(_ordered(entry), ensure_ascii=False)}"
              for site, entry in ledger.items()]
+    text = '{\n' + ',\n'.join(lines) + '\n}\n'
+    if path.exists() and path.read_text(encoding='utf-8') == text:  # 内容没变不重写：文件改动时间就是报告右上角的最新更新日期
+        return
     tmp_path = path.with_suffix('.json.tmp')
     with open(tmp_path, 'w', encoding='utf-8') as f:
-        f.write('{\n' + ',\n'.join(lines) + '\n}\n')
+        f.write(text)
     os.replace(tmp_path, path)
 
 
@@ -147,3 +152,16 @@ def recheck_due(ledger: Dict[str, dict], day: str) -> List[str]:
             if entry.get('status') == STATUS_SUBMITTED
             and (entry.get('submitted_at') or '')[:10] < day
             and (entry.get('checked_at') or '')[:10] != day]
+
+
+def unverified_submissions(ledger: Dict[str, dict]) -> List[str]:
+    """已提交但当场没能确认对方收下（待核实）的外链网站：回访时先查提交在不在"""
+    return [site for site, entry in ledger.items()
+            if entry.get('status') == STATUS_SUBMITTED and entry.get('submit_unverified')]
+
+
+def missing_submit_evidence(ledger: Dict[str, dict]) -> List[str]:
+    """已提交、没写交上的证据、也还没回访过的外链网站（以前的老记录都回访过，不会列进来）"""
+    return [site for site, entry in ledger.items()
+            if entry.get('status') == STATUS_SUBMITTED and not entry.get('submit_evidence')
+            and not entry.get('checks')]

@@ -40,6 +40,7 @@ REPORT_FILES_DIR = 'report'  # 在 data/ 下
 SETTINGS_FILE = 'settings.json'
 PROFILE_FILE = 'profile.json'
 LEDGER_FILE = 'ledger.json'
+UPDATE_NOTES_FILE = 'update_notes.json'  # 报告右上角的更新备注（AI 写）；SKILL 默认外链库的放 assets/library/ 下同名文件
 README_FILE = '用户档案说明.txt'
 ENV_FILE = 'dataforseo.txt'  # 用 .txt：双击就是记事本 / 文本编辑；.env 双击打不开，点开头的 Mac 访达还不显示
 ENV_KEYS = (('DataForSEO_API_login', 'DATAFORSEO_USERNAME'),  # (账号文件里的键, 老账号文件的键 = 环境变量名)
@@ -80,6 +81,11 @@ class UserSpace:
     @property
     def settings_path(self) -> Path:
         return self.data_dir / SETTINGS_FILE
+
+    @property
+    def update_notes_path(self) -> Path:
+        """报告右上角的更新备注：{"library": 外链库这次更新了什么, "sites": {独立站: 台账这次更新了什么}}"""
+        return self.data_dir / UPDATE_NOTES_FILE
 
     @property
     def library_dir(self) -> Path:

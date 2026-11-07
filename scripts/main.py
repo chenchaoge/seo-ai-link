@@ -208,7 +208,7 @@ def print_summary(run_dir: Path, data: dict, sites: List[dict], industries: Dict
         logger.info("免费类外链网站按业务类型：" + "，".join(f"{k} {v}" for k, v in types.items()))
     pending = [s for s in sites if s['verdict'] == VERDICT_UNKNOWN]
     if pending:
-        logger.info(f"无法判断的外链网站 {len(pending)} 个，要人工复核（按 seo-ai-link SKILL 处理）：")
+        logger.info(f"无法判断的外链网站 {len(pending)} 个，要人工复核（按 references/analyze.md「第2步」复核）：")
         for s in pending:
             logger.info(f"  {s['site']}（{s['page_count']} 个页面）| {s['page']} | {s['reason']}")
     log_industries(run_dir, pages, sites, industries, logger)

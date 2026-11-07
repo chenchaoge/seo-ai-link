@@ -80,6 +80,12 @@
     return Math.round((db - da) / 86400000);
   }
   function shortDate(text) { return text ? String(text).slice(5, 10) : '—'; }
+  function updatedBox(day, note) {  // 板块右上角的「最新更新日期」：日期由脚本按文件改动时间给，大字只写月-日；备注是 AI 写的这次更新了什么，另起一行
+    return h('div', { class: 'view-updated' },
+      h('div', { class: 'label' }, '最新更新日期'),
+      h('div', { class: 'day' }, shortDate(day)),
+      note ? h('div', { class: 'note' }, note) : null);
+  }
   function dateRange(from, to) {
     const out = [];
     const d = parseDate(from), end = parseDate(to);
@@ -193,7 +199,7 @@
   window.R = {
     h, VERDICTS, VERDICT_COLOR, STATUSES, STATUS_COLOR, SOURCES, GROUPS, SITE_TYPES, UNSET, MAX_CHECKS,
     INDUSTRY_UNSET, industryOf,
-    parseDate, dayKey, daysBetween, shortDate, dateRange, pct, countBy, Tip,
+    parseDate, dayKey, daysBetween, shortDate, updatedBox, dateRange, pct, countBy, Tip,
     sectionTitle, card, note, kpi, badge, statusBadge, verdictBadge, relBadge, empty, link, pathOf,
   };
 })();

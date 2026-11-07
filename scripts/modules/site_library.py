@@ -29,9 +29,10 @@ USABLE, UNUSABLE = 'usable', 'unusable'
 # 字段顺序即写文件的顺序；industry = 所属行业（可选值见 config.INDUSTRIES），
 # group = 发外链方式，site_type = 业务类型（都只有免费类才有），how = 怎么发外链，
 # entry_url = 提交/发布入口，check = 收录条件或要人确认的，paid_option = 免费类另有的付费档（价格等，有内容就同时算收费），
-# domain_rank = DataForSEO 域名权重 0-100（看到过的最高值），dofollow = 竞品在这个外链网站上的链接是不是 dofollow（没有竞品链接的人工查了补）
+# domain_rank = DataForSEO 域名权重 0-100（看到过的最高值），dofollow = 在这个外链网站上留的链接是不是 dofollow（ugc、sponsored 也算 nofollow；脚本只填空，人看到的直接改），
+# noindex = 冷门产品的同类页面会不会被禁止谷歌收录（脚本不填，只由第5步提交前、第6步回访写，见 references/data.md「外链库」noindex）
 LIBRARY_FIELDS = ['site', 'verdict', 'industry', 'paid_option', 'group', 'site_type', 'scope', 'how', 'entry_url', 'check',
-                  'reason', 'source', 'checked_at', 'first_seen', 'domain_rank', 'dofollow']
+                  'reason', 'source', 'checked_at', 'first_seen', 'domain_rank', 'dofollow', 'noindex']
 
 
 def library_file_of(verdict: str) -> str:
@@ -111,9 +112,12 @@ def save_library(files: Dict[str, Path], library: Dict[str, dict]):
         path.parent.mkdir(parents=True, exist_ok=True)
         lines = [json.dumps({field: entry.get(field) for field in LIBRARY_FIELDS}, ensure_ascii=False)
                  for _, entry in sorted(library.items()) if library_file_of(entry['verdict']) == file_key]
+        text = ''.join(line + '\n' for line in lines)
+        if path.exists() and path.read_text(encoding='utf-8') == text:  # 内容没变不重写：文件改动时间就是报告右上角的最新更新日期
+            continue
         tmp_path = path.with_suffix('.jsonl.tmp')
         with open(tmp_path, 'w', encoding='utf-8') as f:
-            f.write(''.join(line + '\n' for line in lines))
+            f.write(text)
         os.replace(tmp_path, path)
 
 
@@ -189,15 +193,12 @@ def apply_industries(library: Dict[str, dict], marks: Dict[str, str]) -> int:
 
 
 def _merge_link_facts(entry: dict, info: dict):
-    """补上域名权重（取看到过的最高值）和竞品链接属性（见过 dofollow 就记 dofollow）"""
+    """补上域名权重（取看到过的最高值）和竞品链接属性（自动的只填空，不改已有的值，见 references/data.md「外链库」dofollow）"""
     rank = info.get('domain_rank')
     if rank is not None and (entry.get('domain_rank') is None or rank > entry['domain_rank']):
         entry['domain_rank'] = rank
-    dofollow = info.get('dofollow')
-    if dofollow is True:
-        entry['dofollow'] = True
-    elif dofollow is False and entry.get('dofollow') is None:
-        entry['dofollow'] = False
+    if entry.get('dofollow') is None and info.get('dofollow') is not None:
+        entry['dofollow'] = info['dofollow']
 
 
 def _auto_how(site_info: dict) -> Optional[str]:

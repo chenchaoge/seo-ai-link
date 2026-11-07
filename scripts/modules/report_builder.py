@@ -16,18 +16,19 @@ import re
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, Iterable, List, Optional, Set, Tuple
 
-from config import DAILY_SUBMIT_LIMIT, DEFAULT_LIBRARY_FILES, INDUSTRIES, REPORT_TEMPLATE_DIR
+from config import ASSETS_DIR, DAILY_SUBMIT_LIMIT, DEFAULT_LIBRARY_FILES, INDUSTRIES, REPORT_TEMPLATE_DIR
 from modules.industry import INDUSTRY_TO_GROUP, TRACK_ORDER, track_of
 from modules.link_signals import bare_host
 from modules.result_store import load_hand_edited_json, load_results
 from modules.site_library import load_libraries, load_library
 from modules.submission_ledger import load_ledger
 from modules.submit_policy import TIERS, ledger_facts, priority_order, tier_of
-from modules.user_space import UserSpace
+from modules.user_space import UPDATE_NOTES_FILE, UserSpace
 
 DATA_FILE_NAME = 'report_data.js'
+DEFAULT_NOTES_PATH = ASSETS_DIR / 'library' / UPDATE_NOTES_FILE  # SKILL 默认外链库的更新备注（作者改默认外链库时写）
 JS_VAR = 'REPORT_DATA'
 TEMPLATE = UserSpace(REPORT_TEMPLATE_DIR)  # 模板目录和用户目录摆法一样，借 UserSpace 算位置
 LOGO_FILE = 'logo.png'
@@ -38,7 +39,7 @@ ORIGIN_DEFAULT = 'SKILL 默认外链库'
 ORIGIN_USER = '用户外链库'
 MAX_PAGES = 3  # 每个外链网站最多列几个看过的页面
 LIBRARY_ITEM_FIELDS = ('site', 'verdict', 'industry', 'group', 'site_type', 'scope', 'how', 'entry_url', 'check', 'reason',
-                       'source', 'checked_at', 'first_seen', 'paid_option', 'domain_rank', 'dofollow')
+                       'source', 'checked_at', 'first_seen', 'paid_option', 'domain_rank', 'dofollow', 'noindex')
 CROSS_GROUP = '不分行业'  # 综合导航站、综合论坛博客不属于任何赛道大类，报告里单列一组
 EMAIL_RE = re.compile(r'([A-Za-z0-9._%+-]{1,2})[A-Za-z0-9._%+-]*@([A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,})')
 PASSWORD_MASK = '******'
@@ -117,6 +118,7 @@ def build_ledger_entries(ledger: Dict[str, dict], library: Dict[str, dict],
             **_plan(facts),
             'needs_confirm': facts['needs_confirm'],  # 其他赛道、用户还没定要不要发
             'dofollow': facts['dofollow'],
+            'noindex': facts['noindex'],
             'domain_rank': facts['domain_rank'],
             'group': entry.get('group'),
             'site_type': entry.get('site_type'),
@@ -186,7 +188,7 @@ def build_library_sites(library: Dict[str, dict], user_sites: Set[str], provenan
         item['used_by'] = used_by.get(site, {})
         item['tracks'] = {s: track_of(industry, item['industry']) for s, industry in site_industries.items()}
         item['plans'] = {s: _plan({'track': track, 'dofollow': item['dofollow'], 'domain_rank': item['domain_rank'],
-                                   'tier': tier_of(track, item['verdict'], item['dofollow'])})
+                                   'tier': tier_of(track, item['verdict'], item['dofollow'], item['noindex'])})
                          for s, track in item['tracks'].items()}
         sites.append(item)
     return sites
@@ -197,13 +199,30 @@ def _industry_list() -> List[dict]:
     return [{'name': industry, 'group': INDUSTRY_TO_GROUP.get(industry, CROSS_GROUP)} for industry in INDUSTRIES]
 
 
-def _report_data(library_sites: List[dict], independent_sites: List[dict], user_report: bool) -> dict:
-    """user_report：用户目录的报告（菜单 5、6）为 True，SKILL 自带的网页（菜单 8）为 False"""
+def _file_time(paths: Iterable[Path]) -> Optional[str]:
+    """几个文件里最后一次改动的时间（本机时间，YYYY-MM-DD HH:MM），都不存在返回 None；报告右上角的最新更新日期用它"""
+    times = [p.stat().st_mtime for p in paths if p.exists()]
+    return datetime.fromtimestamp(max(times)).strftime('%Y-%m-%d %H:%M') if times else None
+
+
+def _load_notes(path: Path) -> dict:
+    """读报告右上角的更新备注（AI 写的），没有文件当没写"""
+    return load_hand_edited_json(path) if path.exists() else {}
+
+
+def _report_data(library_sites: List[dict], independent_sites: List[dict], user_report: bool,
+                 library_updated_at: Optional[str], library_note: Optional[str]) -> dict:
+    """
+    user_report：用户目录的报告（菜单 5、6）为 True，SKILL 自带的网页（菜单 8）为 False；
+    library_updated_at、library_note：外链库板块右上角的最新更新日期（外链库文件的改动时间）和备注（AI 写）
+    """
     now = datetime.now()
     return {
         'user_report': user_report,
         'generated_at': now.strftime('%Y-%m-%d %H:%M'),
         'today': now.strftime('%Y-%m-%d'),
+        'library_updated_at': library_updated_at,
+        'library_note': mask_text(library_note),
         'industries': _industry_list(),
         'tracks': TRACK_ORDER,
         'tiers': [{'key': key, 'desc': desc} for key, desc in TIERS.items()],  # 发外链原则的档，顺序 = 发的先后
@@ -263,6 +282,8 @@ def build_user_report(space: UserSpace) -> Tuple[dict, List[str], dict]:
          {'library': 完整外链库外链网站数, 'user_library': 用户外链库外链网站数, 'independent_sites': {独立站: 台账条目数}})
     """
     library, _, user_sites = load_libraries(DEFAULT_LIBRARY_FILES, space.library_files)
+    notes = _load_notes(space.update_notes_path)
+    site_notes = notes.get('sites') or {}
     sites, used_by = [], {}
     for site in space.independent_sites():
         path = space.ledger_path(site)
@@ -270,14 +291,17 @@ def build_user_report(space: UserSpace) -> Tuple[dict, List[str], dict]:
         entries = build_ledger_entries(load_ledger(path), library, profile['industry']) if path.exists() else []
         for entry in entries:
             used_by.setdefault(entry['site'], {})[site] = entry['status']
-        sites.append({**profile, 'entries': entries})
+        sites.append({**profile, 'ledger_updated_at': _file_time([path]), 'update_note': mask_text(site_notes.get(site)),
+                      'entries': entries})  # 右上角：最新更新日期 = 台账文件的改动时间，备注 = AI 写的这次更新了什么
     sites.sort(key=lambda s: -len(s['entries']))  # 台账条目多的排前面
     site_industries = {s['site']: s['industry'] for s in sites}
     library_sites = build_library_sites(library, user_sites, collect_provenance(space.analyses_dir), used_by,
                                         site_industries)
     summary = {'library': len(library), 'user_library': len(user_sites),
                'independent_sites': {s['site']: len(s['entries']) for s in sites}}
-    return _report_data(library_sites, sites, True), collect_passwords(space), summary
+    library_updated_at = _file_time([*DEFAULT_LIBRARY_FILES.values(), *space.library_files.values()])
+    data = _report_data(library_sites, sites, True, library_updated_at, notes.get('library'))
+    return data, collect_passwords(space), summary
 
 
 def generate_default_report() -> dict:
@@ -289,5 +313,7 @@ def generate_default_report() -> dict:
     """
     library = load_library(DEFAULT_LIBRARY_FILES)
     library_sites = build_library_sites(library, set(), {}, {}, {})
-    path = write_report_data(TEMPLATE.report_files_dir, _report_data(library_sites, [], False), [])
+    data = _report_data(library_sites, [], False, _file_time(DEFAULT_LIBRARY_FILES.values()),
+                        _load_notes(DEFAULT_NOTES_PATH).get('library'))
+    path = write_report_data(TEMPLATE.report_files_dir, data, [])
     return {'path': path, 'index': TEMPLATE.report_html, 'library': len(library)}

@@ -1,18 +1,5 @@
 """
-发外链原则：第5步发外链的先后和每天发多少（默认就按这个做，用户明确说了自己的做法就照用户的）
-1. 先发契合赛道（同赛道、相近赛道、不分行业）、免费、dofollow 的外链网站
-2. 这些发完了再从剩下的里挑：免费的先于付费的，dofollow 先于 nofollow，最后才看赛道；合起来分档：
-   第1档 契合赛道、免费、dofollow
-   第2档 其他赛道、免费、dofollow
-   第3档 契合赛道、免费、nofollow（链接属性没记录的也在这档，排在 nofollow 前面）
-   第4档 其他赛道、免费、nofollow 或没记录
-   第5档 付费
-   行业未标的先补所属行业再排
-3. 其他赛道的（第2、4档）和付费的（第5档）要先给用户看，用户定了要发（台账那行 user_confirmed 写 true）才发，不发的记跳过
-   台账里待提交、但外链库已经判成不可用的，不排队，单独列出来让人改成跳过（stale_pending）
-4. 同一档里：同赛道 → 相近赛道 → 不分行业，再 dofollow → 没记录 → nofollow，最后权重从高到低
-5. 每个独立站每天成功提交不超过 config.DAILY_SUBMIT_LIMIT 个，满了当天停，第二天接着发
-链接属性看外链库的 dofollow（在这个外链网站上留的链接是不是 dofollow），权重看外链库的 domain_rank
+发外链原则见 references/submit.md「发外链原则」；这里只管程序排档和每天额度，档的说明在 TIERS
 """
 
 from datetime import datetime
@@ -23,14 +10,15 @@ from modules.classifier import VERDICT_FREE, VERDICT_PAID
 from modules.industry import FIT_TRACKS, TRACK_ORDER, TRACK_OTHER, TRACK_UNKNOWN, track_of
 from modules.submission_ledger import STATUS_PENDING
 
-TIER_1, TIER_2, TIER_3, TIER_4, TIER_5 = '第1档', '第2档', '第3档', '第4档', '第5档'
+TIER_1, TIER_2, TIER_3, TIER_4, TIER_5, TIER_6 = '第1档', '第2档', '第3档', '第4档', '第5档', '第6档'
 TIER_UNKNOWN = '先补行业'
 TIERS = {  # 档 → 说明，顺序 = 发外链的先后
     TIER_1: '契合赛道、免费、dofollow',
     TIER_2: '其他赛道、免费、dofollow（先问用户发不发）',
     TIER_3: '契合赛道、免费、nofollow 或没记录',
     TIER_4: '其他赛道、免费、nofollow 或没记录（先问用户发不发）',
-    TIER_5: '付费（先问用户发不发，定了要做的才发）',
+    TIER_5: '免费、冷门页 noindex（其他赛道的先问用户发不发）',
+    TIER_6: '付费（先问用户发不发，定了要做的才发）',
     TIER_UNKNOWN: '行业未标，先补所属行业再排',
 }
 TIER_ORDER = list(TIERS)
@@ -38,14 +26,16 @@ DOFOLLOW_ORDER = {True: 0, None: 1, False: 2}  # dofollow → 没记录 → nofo
 REL_TEXT = {True: 'dofollow', None: '链接属性没记录', False: 'nofollow'}
 
 
-def tier_of(track: str, verdict: Optional[str], dofollow: Optional[bool]) -> Optional[str]:
-    """外链网站在发外链原则里排第几档；不可用、无法判断的不发，返回 None"""
+def tier_of(track: str, verdict: Optional[str], dofollow: Optional[bool], noindex: Optional[bool]) -> Optional[str]:
+    """外链网站在发外链原则里排第几档；不可用、无法判断的不发，返回 None；noindex 没记录的按原来的档排"""
     if verdict == VERDICT_PAID:
-        return TIER_5
+        return TIER_6
     if verdict != VERDICT_FREE:
         return None
     if track == TRACK_UNKNOWN:
         return TIER_UNKNOWN
+    if noindex is True:
+        return TIER_5
     fit = track in FIT_TRACKS
     if dofollow is True:
         return TIER_1 if fit else TIER_2
@@ -71,17 +61,18 @@ def priority_order(item: dict) -> int:
 
 def ledger_facts(site: str, entry: dict, library: Dict[str, dict], site_industry: Optional[str]) -> dict:
     """
-    台账一行排先后要用的事实：结论、所属行业以外链库为准（外链库没有的用台账里的），链接属性和权重只在外链库里有
+    台账一行排先后要用的事实：结论、所属行业以外链库为准（外链库没有的用台账里的），链接属性、冷门页 noindex 和权重只在外链库里有
 
     Returns:
-        {'site', 'verdict', 'industry', 'track', 'dofollow', 'domain_rank', 'tier', 'needs_confirm'}
+        {'site', 'verdict', 'industry', 'track', 'dofollow', 'noindex', 'domain_rank', 'tier', 'needs_confirm'}
     """
     lib = library.get(site) or {}
     verdict = lib.get('verdict') or entry.get('verdict')
     industry = lib.get('industry') or entry.get('industry')
     track = track_of(site_industry, industry)
     return {'site': site, 'verdict': verdict, 'industry': industry, 'track': track, 'dofollow': lib.get('dofollow'),
-            'domain_rank': lib.get('domain_rank'), 'tier': tier_of(track, verdict, lib.get('dofollow')),
+            'noindex': lib.get('noindex'), 'domain_rank': lib.get('domain_rank'),
+            'tier': tier_of(track, verdict, lib.get('dofollow'), lib.get('noindex')),
             'needs_confirm': needs_confirm(track, verdict, entry)}
 
 
@@ -106,7 +97,7 @@ def submit_queue(ledger: Dict[str, dict], library: Dict[str, dict], site_industr
     台账里待提交的外链网站按发外链原则排好（不可用、无法判断的不排，按铁律它们应该已改成跳过）
 
     Returns:
-        [{'site', 'verdict', 'industry', 'track', 'dofollow', 'domain_rank', 'tier', 'needs_confirm', 'group',
+        [{'site', 'verdict', 'industry', 'track', 'dofollow', 'noindex', 'domain_rank', 'tier', 'needs_confirm', 'group',
           'submit_url'}]，第一个就是下一个要发的（needs_confirm 是 True 的先问用户）
     """
     queue = []

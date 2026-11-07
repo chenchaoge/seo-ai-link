@@ -1,9 +1,21 @@
-# seo-ai-link v0.91 更新日期：1107
+# seo-ai-link v1.0.0 更新日期：1108
 
-[![Version](https://img.shields.io/badge/version-0.91-2563EB.svg?style=flat-square)](VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.0-2563EB.svg?style=flat-square)](VERSION)
 [![License](https://img.shields.io/badge/license-All%20Rights%20Reserved-16A34A.svg?style=flat-square)](LICENSE)
 
-竞品外链挖掘 → 外链库管理 → AI 自动发外链 → 收录回访，全流程配有可视化报表
+<br>
+
+**竞品外链挖掘 → 外链库管理 → AI 自动发外链 → 收录回访，全流程配有可视化报表**
+
+<br>
+
+**1108 更新：**
+1. AI 按当前要做的事只读对应的规则文件，更省 token
+2. 发外链前先查对方网站的同类页面会不会被谷歌收录，不会收录的排到最后发
+3. 提交外链后当场确认对方真的收到了，不再误记成「已提交」
+4. 更准地判断外链是 dofollow 还是 nofollow
+5. 外链报告显示最后更新日期和这次更新了什么
+6. 用户的账号、邮箱等私人信息一律不写进 SKILL 目录
 
 ![外链报告网页：外链库部分](assets/screenshots/library-report.png)
 
@@ -45,7 +57,7 @@ seo-ai-link 不提供批量群发、链接农场（Link Farm）、站群（PBN�
 
 ## 内置外链库
 
-当前内置外链库以 AI 产品工具和科技赛道为主。v0.91 共有可用外链网站（免费类 + 付费类）206 个，按所属行业分布如下：
+当前内置外链库以 AI 产品工具和科技赛道为主。v1.0.0 共有可用外链网站（免费类 + 付费类）206 个，按所属行业分布如下：
 
 | 所属行业 | 可用 | 其中免费 |
 | --- | --- | --- |
@@ -94,6 +106,12 @@ Skill 目录只放程序、规则和内置外链库；用户的数据全部存�
 - 习惯手动安装 Python 库的，在 Skill 目录运行 `pip install -r requirements.txt`
 - DataForSEO 账号只在挖掘竞品外链时需要，按次计费，每次查询前 AI 会先征得用户同意。新用户注册赠送 1 美元额度，约可查询 15 次
 
+## 模型选择
+
+外链全流程的操作规范（SOP）已在 Skill 中逐项约定，AI 按规则执行即可，对模型能力要求不高。建议选用性价比高的模型运行，无需使用最新的旗舰模型，可明显节省 token
+
+- 以 Claude 为例：模型选择 Sonnet 5.5，推理强度（effort）设为 high 即可
+
 ## 快速开始
 
 **第 1 步：安装**
@@ -136,6 +154,7 @@ cd ~/.claude/skills/seo-ai-link && git pull
 | 作者 | 陈朝歌chen |
 | GitHub | [chenchaoge](https://github.com/chenchaoge) |
 | 抖音 | [陈朝歌chen](https://www.douyin.com/user/MS4wLjABAAAAkZOGJtVUaec6vsz1qgF_xnYhgNRvZVoON--_Zl7sGw94dOK2neTeOauA3RYIbD72) |
+| 微信视频号 | 陈朝歌chen |
 
 ## 许可证
 

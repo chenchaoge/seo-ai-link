@@ -22,7 +22,7 @@ SITE_PRIORITY = [VERDICT_FREE, VERDICT_UNKNOWN, VERDICT_PAID, VERDICT_NO]  # 页
 
 # 免费类按两个维度分：发外链方式 group（拿到链接要不要先有账号）、业务类型 site_type（对方是什么站）
 GROUP_DIRECT = '直接提交'      # 免登录表单、发邮件、推荐入口，不用账号
-GROUP_SIGNUP = '注册账号提交'  # 要先有账号：邮箱注册、谷歌等第三方登录都算；用哪个账号看 SKILL.md「注册登录用哪个账号」
+GROUP_SIGNUP = '注册账号提交'  # 要先有账号：邮箱注册、谷歌等第三方登录都算；用哪个账号看 references/accounts.md「注册登录用哪个账号」
 FREE_GROUPS = [GROUP_DIRECT, GROUP_SIGNUP]
 
 TYPE_BACKLINK = '要挂回链或徽章'     # 要先在独立站挂对方链接或徽章才收录；有这个要求就归这类，不管它本身是什么站

@@ -18,7 +18,7 @@ from modules.classifier import (
     classify_fetch_failure, classify_page,
 )
 from modules.link_signals import (
-    analyze_submit_page, bare_host, extract_signals, has_spammy_tld, is_blocked,
+    NOFOLLOW_TOKENS, analyze_submit_page, bare_host, extract_signals, has_spammy_tld, is_blocked,
     is_stat_site, match_known_platform,
 )
 from modules.result_store import CARRY_FIELDS, save_results
@@ -29,6 +29,15 @@ PAGE_BACKLINK_FIELDS = [
     'url_to', 'anchor', 'dofollow', 'rank', 'domain_from_rank', 'page_from_rank',
     'domain_from_platform_type', 'page_from_external_links', 'page_from_title', 'semantic_location',
 ]
+
+
+def page_backlink(b: Dict) -> Dict:
+    """页面从外链数据里带上的字段；DataForSEO 的 dofollow 只认 nofollow，带 ugc、sponsored 的它也标 dofollow，这里改成 nofollow"""
+    backlink = {key: b.get(key) for key in PAGE_BACKLINK_FIELDS}
+    rel = {r.lower() for r in (b.get('attributes') or [])}
+    if backlink['dofollow'] and rel & NOFOLLOW_TOKENS:
+        backlink['dofollow'] = False
+    return backlink
 
 
 class UsabilityChecker:
@@ -84,7 +93,7 @@ class UsabilityChecker:
                 'url_from': url,
                 'domain_from': domain,
                 'domain_backlink_count': domain_counts[site],
-                'backlink': {key: b.get(key) for key in PAGE_BACKLINK_FIELDS},
+                'backlink': page_backlink(b),
                 'auto_verdict': None,
                 'auto_group': None,
                 'auto_site_type': None,

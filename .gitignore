@@ -13,7 +13,7 @@ __pycache__/
 dataforseo.txt
 !assets/templates/dataforseo.txt
 
-# 测试脚本只在作者本机用：test 目录上传，里面的东西不上传
+# test 目录留给用户自己放测试脚本：目录上传，里面的东西不上传
 test/*
 !test/.gitkeep
 

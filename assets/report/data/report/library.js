@@ -18,14 +18,15 @@
   const typeOf = (s) => s.site_type || R.UNSET;
 
   // userReport：用户目录的报告（还没有独立站时也是）；否则是 SKILL 自带的网页
-  function header(userReport, hasSites) {
+  function header(userReport, hasSites, data) {
     const eyebrow = userReport ? (hasSites ? '第一部分 · 外链库' : '外链库') : 'SKILL 默认外链库';
     return h('div', { class: 'view-head' }, h('div', null,
       h('div', { class: 'eyebrow' }, eyebrow),
       h('h1', { class: 'view-title' }, '外链库：哪些外链网站能给独立站留链接'),
       h('p', { class: 'view-desc' }, userReport
         ? `外链网站从竞品的外链里挖出来，有的脚本判过、有的人看过、有的真提交过。完整外链库 = SKILL 默认外链库 + 用户外链库，同一个外链网站以用户外链库为准。先看能用的有多少、每个结论是怎么得出的、怎么发最省事${hasSites ? '、各独立站发了多少' : ''}，最后在清单里按条件筛。`
-        : '这是 SKILL 自带的外链库：外链网站从竞品的外链里挖出来，有的脚本判过、有的人看过、有的真提交过。先看能用的有多少、每个结论是怎么得出的、怎么发最省事，最后在清单里按条件筛。')));
+        : '这是 SKILL 自带的外链库：外链网站从竞品的外链里挖出来，有的脚本判过、有的人看过、有的真提交过。先看能用的有多少、每个结论是怎么得出的、怎么发最省事，最后在清单里按条件筛。')),
+      R.updatedBox(data.library_updated_at, data.library_note));
   }
 
   function kpis(lib, onPick, userReport, hasSites) {
@@ -308,7 +309,7 @@
     root.textContent = '';
     let list = null;
     const pick = (verdict) => { list._pick(verdict); list.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
-    root.appendChild(header(Boolean(data.user_report), hasSites));
+    root.appendChild(header(Boolean(data.user_report), hasSites, data));
     root.appendChild(kpis(lib, pick, Boolean(data.user_report), hasSites));
     root.appendChild(R.sectionTitle('外链库的结论', '每个外链网站的结论是什么、是怎么得出的'));
     root.appendChild(h('div', { class: 'grid grid-5-7' }, verdictCard(lib), sourceCard(lib)));
