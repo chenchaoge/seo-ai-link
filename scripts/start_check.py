@@ -58,7 +58,8 @@ NPM_MIRROR = 'https://registry.npmmirror.com'  # npm 国内镜像：官方源连
 NODE_MIRROR = NPM_MIRROR + '/-/binary/node/latest-v24.x/'  # Node.js 安装包的国内镜像（nodejs.org 的镜像）
 RERUN_FLAG = 'SEO_AI_LINK_START_CHECK_RERUN'  # 装完库重跑时带上，重跑那次不再装、不再重跑
 NETWORK_TIMEOUT = 15
-NET_PIP, NET_NPM, NET_DATAFORSEO, NET_WEB = '装 Python 库', '装浏览器工具 Playwright MCP（npm）', '菜单 1 查竞品外链（DataForSEO）', '打开外链网站'
+NET_PIP, NET_NPM, NET_DATAFORSEO, NET_WEB = (
+    '装 Python 库', '装浏览器工具 Playwright MCP（npm）', '菜单 1 查竞品外链（DataForSEO）', '打开外链网站')
 NETWORK_TARGETS = [  # (用来干什么, 官方地址, 国内镜像或 None)；对方回任何 HTTP 状态码都算连得上
     (NET_PIP, 'https://pypi.org/simple/', PIP_MIRROR + '/'),
     (NET_NPM, 'https://registry.npmjs.org/', NPM_MIRROR + '/'),
@@ -147,7 +148,8 @@ def check_network(problems: List[str]) -> Dict[str, Optional[str]]:
     if not any(result.values()):
         print("    全都连不上：多半是平台没给命令联网权限（沙箱），请用户在平台设置里打开联网，或者电脑本身没网")
     if result[NET_NPM] == MIRROR:
-        print(f"    装 Playwright MCP 时在 MCP 配置里加环境变量 npm_config_registry={NPM_MIRROR}（见 references/setup.md「浏览器工具：Playwright MCP」）")
+        print(f"    装 Playwright MCP 时在 MCP 配置里加环境变量 npm_config_registry={NPM_MIRROR}"
+              "（见 references/setup.md「浏览器工具：Playwright MCP」）")
     return result
 
 

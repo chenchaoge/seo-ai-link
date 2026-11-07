@@ -63,11 +63,11 @@
     const sitesText = hasSites ? `${data.independent_sites.length} 个独立站` : '还没有独立站';
     document.getElementById('generated-at').textContent = data.user_report
       ? `数据生成于 ${data.generated_at} · 外链库 ${libCount} 个外链网站 · ${sitesText}`
-      : `数据生成于 ${data.generated_at} · SKILL 默认外链库 ${libCount} 个外链网站`;
-    let footer = '这是 SKILL 自带的网页，只有 SKILL 默认外链库；域名权重来自 DataForSEO。设置好用户目录后跑 scripts/main.py 菜单 5，用户目录第一层会生成「外链报告.html」，带用户外链库和各独立站发外链情况。';
+      : `数据生成于 ${data.generated_at} · CCG 外链库 ${libCount} 个外链网站`;
+    let footer = '这是 SKILL 自带的网页，只有 CCG 外链库；域名权重来自 DataForSEO。设置好用户目录后跑 scripts/main.py 菜单 5，用户目录第一层会生成「外链报告.html」，带用户外链库和各独立站发外链情况。';
     if (data.user_report) {
       const live = location.protocol.startsWith('http');  // 菜单 10 的本机网页：数据每次打开现算
-      footer = '数据来源：SKILL 默认外链库 + 用户外链库、各独立站的提交台账、分析结果目录（外链网站从哪个竞品挖出来）；域名权重来自 DataForSEO。报告里不放密码，邮箱只留前两位。'
+      footer = '数据来源：CCG 外链库 + 用户外链库、各独立站的提交台账、分析结果目录（外链网站从哪个竞品挖出来）；域名权重来自 DataForSEO。报告里不放密码，邮箱只留前两位。'
         + (live ? '这是本机网页，刷新就是最新数据。' : '数据更新后跑 scripts/main.py 菜单 5 重新生成。')
         + (hasSites ? '' : `现在还没有独立站：建好独立站、开始发外链后${live ? '刷新' : '重新生成'}，会多出「各独立站发外链情况」。`);
     }

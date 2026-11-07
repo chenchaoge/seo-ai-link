@@ -48,6 +48,7 @@ def normalize_group(group: Optional[str], site_type: Optional[str] = None) -> Tu
         return new_group, site_type or legacy_type
     return group, site_type
 
+
 # 结论范围
 SCOPE_SITE = '整站'  # 网站层面的事实（提交规则、收费档、平台类型），以后碰到这个网站直接用
 SCOPE_PAGE = '页面'  # 只在这个页面上看到的（评论关了、编辑文章、页面没了），别的页面要重新查

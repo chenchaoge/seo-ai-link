@@ -32,7 +32,7 @@
 
 1. **装依赖**：照「装软件」处理，直到开工检查没有标「要处理」的（「还没设置用户目录」这条提醒留到「建用户目录」处理）。
 2. **装浏览器工具**：照「浏览器工具：Playwright MCP」装。装好后用它打开 `https://example.com`，`browser_snapshot` 看到页面标题「Example Domain」才算能用。试完用 `browser_close` 关掉浏览器。
-3. **打开 SKILL 自带的外链报告**：用用户自己的默认浏览器打开 SKILL 目录的 `assets/report/外链报告.html`（Windows 在 PowerShell 跑 `Start-Process "<文件完整路径>"`，Mac 跑 `open "<文件完整路径>"`）。里面只有 SKILL 默认外链库，不用用户目录。平台打不开本机文件的，告诉用户双击这个文件看。
+3. **打开 SKILL 自带的外链报告**：用用户自己的默认浏览器打开 SKILL 目录的 `assets/report/外链报告.html`（Windows 在 PowerShell 跑 `Start-Process "<文件完整路径>"`，Mac 跑 `open "<文件完整路径>"`）。里面只有 CCG 外链库，不用用户目录。平台打不开本机文件的，告诉用户双击这个文件看。
 4. **基础说明**：照下面给用户讲一遍，最后一行问用户目录放哪。
 
 结束边界：开工检查没有标「要处理」的；浏览器工具打开过 example.com；SKILL 自带的外链报告打开过；基础说明讲过了。讲完就停下，等用户给了文件夹路径再做「建用户目录」。

@@ -97,8 +97,8 @@ def submit_queue(ledger: Dict[str, dict], library: Dict[str, dict], site_industr
     台账里待提交的外链网站按发外链原则排好（不可用、无法判断的不排，按铁律它们应该已改成跳过）
 
     Returns:
-        [{'site', 'verdict', 'industry', 'track', 'dofollow', 'noindex', 'domain_rank', 'tier', 'needs_confirm', 'group',
-          'submit_url'}]，第一个就是下一个要发的（needs_confirm 是 True 的先问用户）
+        [{'site', 'verdict', 'industry', 'track', 'dofollow', 'noindex', 'domain_rank', 'tier', 'needs_confirm',
+          'group', 'submit_url'}]，第一个就是下一个要发的（needs_confirm 是 True 的先问用户）
     """
     queue = []
     for site, entry in ledger.items():
@@ -128,4 +128,5 @@ def daily_quota(ledger: Dict[str, dict], day: str) -> dict:
         {'day': 日期, 'submitted': 已成功提交几个, 'limit': 每天最多几个, 'left': 还能发几个}
     """
     submitted = submitted_on(ledger, day)
-    return {'day': day, 'submitted': submitted, 'limit': DAILY_SUBMIT_LIMIT, 'left': max(0, DAILY_SUBMIT_LIMIT - submitted)}
+    return {'day': day, 'submitted': submitted, 'limit': DAILY_SUBMIT_LIMIT,
+            'left': max(0, DAILY_SUBMIT_LIMIT - submitted)}

@@ -1,5 +1,5 @@
 """
-用户目录（用户档案）：SKILL 目录只放作者给的默认档案（代码、文档、SKILL 默认外链库、模板），
+用户目录（用户档案）：SKILL 目录只放作者给的默认档案（代码、文档、CCG 外链库、模板），
 用户自己的东西都放用户目录，SKILL 更新、删掉重装都不丢。用户目录的位置由用户定，
 记在电脑用户文件夹的 .seo-external-link.json（见 config.USER_CONFIG_FILE）
 
@@ -40,7 +40,7 @@ REPORT_FILES_DIR = 'report'  # 在 data/ 下
 SETTINGS_FILE = 'settings.json'
 PROFILE_FILE = 'profile.json'
 LEDGER_FILE = 'ledger.json'
-UPDATE_NOTES_FILE = 'update_notes.json'  # 报告右上角的更新备注（AI 写）；SKILL 默认外链库的放 assets/library/ 下同名文件
+UPDATE_NOTES_FILE = 'update_notes.json'  # 报告右上角的更新备注（AI 写）；CCG 外链库的放 assets/library/ 下同名文件
 README_FILE = '用户档案说明.txt'
 ENV_FILE = 'dataforseo.txt'  # 用 .txt：双击就是记事本 / 文本编辑；.env 双击打不开，点开头的 Mac 访达还不显示
 ENV_KEYS = (('DataForSEO_API_login', 'DATAFORSEO_USERNAME'),  # (账号文件里的键, 老账号文件的键 = 环境变量名)

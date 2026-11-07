@@ -11,13 +11,13 @@ ASSETS_DIR = SKILL_DIR / "assets"
 # 记用户目录在哪：{"user_dir": "完整路径"}。放在电脑的用户文件夹，不放 SKILL 目录，SKILL 更新、删掉重装都不丢
 USER_CONFIG_FILE = Path.home() / ".seo-external-link.json"
 
-# 外链库分两层：SKILL 默认外链库（作者给的，只读）+ 用户外链库（用户目录 data/library/，用户新增和更正的）
+# 外链库分两层：CCG 外链库（作者给的，只读）+ 用户外链库（用户目录 data/library/，用户新增和更正的）
 LIBRARY_FILE_NAMES = {
     'usable': "usable_sites.jsonl",      # 可用：免费类、付费类
     'unusable': "unusable_sites.jsonl",  # 明确不可用
 }
 DEFAULT_LIBRARY_FILES = {key: ASSETS_DIR / "library" / name for key, name in LIBRARY_FILE_NAMES.items()}
-REPORT_TEMPLATE_DIR = ASSETS_DIR / "report"  # HTML 外链报告模板（按用户目录的样子摆）；直接打开它的外链报告.html = 只有 SKILL 默认外链库的网页
+REPORT_TEMPLATE_DIR = ASSETS_DIR / "report"  # HTML 外链报告模板（按用户目录的样子摆）；直接打开它的外链报告.html = 只有 CCG 外链库的网页
 TEMPLATES_DIR = ASSETS_DIR / "templates"     # 用户目录 settings.json、独立站 profile.json 的模板
 # 菜单 10 的本机外链报告网页（modules/web_app.py）：只在本机开，别的电脑访问不到；端口被别的程序占了就改这里
 WEB_HOST = '127.0.0.1'
@@ -162,7 +162,8 @@ SIGNAL_RULES = {
         'paid_submit_text': (r'every\s+listing\s+has\s+a\s+fee|(listing|submission|review)\s+fee|'
                              r'tokens?\s+to\s+activate|付费(收录|提交)'),
         # 写明免费收录的（比 free_text 严：只认"免费提交/免费收录"，不认页面上随便一个 free）
-        'free_listing_text': r'free\s+(listing|submissions?|submit)|submit\s+(for\s+)?free|free\s+to\s+(submit|list)|免费(提交|收录)',
+        'free_listing_text': (r'free\s+(listing|submissions?|submit)|submit\s+(for\s+)?free|free\s+to\s+(submit|list)|'
+                              r'免费(提交|收录)'),
         # 第三方账号登录按钮
         'oauth_text': (r'(continue|sign\s*(in|up)|log\s*in)\s+with\s+(google|github|x|twitter|linkedin|apple|facebook|'
                        r'microsoft|discord)|微信(扫码)?登录|手机号(码)?登录'),
@@ -171,8 +172,10 @@ SIGNAL_RULES = {
         # 提 PR 提交（ilovefree、awesome 清单）
         'pr_submit_text': r'pull\s+request',
         # 收录条件：只记进需人工核验，不改大类（符不符合要看独立站的情况）
-        'free_tier_required': r'free\s+(tier|plan|version)\s+(is\s+)?required|must\s+(have|offer|include)\s+a\s+(permanent\s+)?free',
-        'category_limit_text': r'(we\s+)?only\s+(accept|list|feature|include)s?\s+[^.。]{3,50}|仅收录[^。，]{2,30}|只收录[^。，]{2,30}',
+        'free_tier_required': (r'free\s+(tier|plan|version)\s+(is\s+)?required|'
+                               r'must\s+(have|offer|include)\s+a\s+(permanent\s+)?free'),
+        'category_limit_text': (r'(we\s+)?only\s+(accept|list|feature|include)s?\s+[^.。]{3,50}|'
+                                r'仅收录[^。，]{2,30}|只收录[^。，]{2,30}'),
         'github_repo_text': r'github\s+(repo|repository)\s+(url|link)|repository\s+url',
         'llms_txt_text': r'llms\.txt',
         'app_only_text': r'扫码下载|download\s+(the|our)\s+app|get\s+the\s+app',
@@ -192,5 +195,6 @@ SIGNAL_RULES = {
                    'ng-app=', 'ng-version=', 'react-root', 'data-reactroot'],
     # 垃圾域名（借鉴 backlink-gap-finder core.py）：自动生成"网站估值/whois"页面的站，没法主动留链接
     'spammy_tlds': ['xyz', 'top', 'click', 'loan', 'work', 'gq', 'tk', 'ml', 'cf', 'ga', 'buzz', 'rest', 'icu', 'cyou'],
-    'stat_site_words': r'web-?stats|whois|site-?(value|worth|info|analysis)|domain-?(stats|info)|websiteoutlook|siteprice',
+    'stat_site_words': (r'web-?stats|whois|site-?(value|worth|info|analysis)|domain-?(stats|info)|'
+                        r'websiteoutlook|siteprice'),
 }

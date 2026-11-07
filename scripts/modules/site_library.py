@@ -1,9 +1,9 @@
 """
 外链库：跑过、看过的外链网站各自什么情况（能不能发外链、怎么发、条件、依据），以后分析别的竞品时先拿来比对
-- 分两层：SKILL 默认外链库（assets/library/，作者给的，只读）+ 用户外链库（用户目录 library/，用户新增和更正的）。
+- 分两层：CCG 外链库（assets/library/，作者给的，只读）+ 用户外链库（用户目录 library/，用户新增和更正的）。
   两层合起来才是完整外链库；同一个外链网站两层都有时，以用户外链库为准
 - 每层两个文件，一个外链网站一行（JSONL）：可用 usable_sites.jsonl（免费类、付费类），不可用 unusable_sites.jsonl
-- 程序改动外链库时只写用户外链库：默认外链库里的外链网站有了新结论，就把整行抄进用户外链库再改
+- 程序改动外链库时只写用户外链库：CCG 外链库里的外链网站有了新结论，就把整行抄进用户外链库再改
 - 只记外链网站本身的事实；从哪个竞品挖出来、看过哪些页面在用户目录的分析结果目录里，独立站收录情况记在台账
 - 结论范围 scope：整站 = 对整个外链网站成立，以后再碰到直接用；页面 = 只在某些页面上看到（比如那篇文章评论关了），
   以后碰到这个外链网站别的页面还要重新查。不用局部经验做整体判断
@@ -29,10 +29,13 @@ USABLE, UNUSABLE = 'usable', 'unusable'
 # 字段顺序即写文件的顺序；industry = 所属行业（可选值见 config.INDUSTRIES），
 # group = 发外链方式，site_type = 业务类型（都只有免费类才有），how = 怎么发外链，
 # entry_url = 提交/发布入口，check = 收录条件或要人确认的，paid_option = 免费类另有的付费档（价格等，有内容就同时算收费），
-# domain_rank = DataForSEO 域名权重 0-100（看到过的最高值），dofollow = 在这个外链网站上留的链接是不是 dofollow（ugc、sponsored 也算 nofollow；脚本只填空，人看到的直接改），
-# noindex = 冷门产品的同类页面会不会被禁止谷歌收录（脚本不填，只由第5步提交前、第6步回访写，见 references/data.md「外链库」noindex）
-LIBRARY_FIELDS = ['site', 'verdict', 'industry', 'paid_option', 'group', 'site_type', 'scope', 'how', 'entry_url', 'check',
-                  'reason', 'source', 'checked_at', 'first_seen', 'domain_rank', 'dofollow', 'noindex']
+# domain_rank = DataForSEO 域名权重 0-100（看到过的最高值），
+# dofollow = 在这个外链网站上留的链接是不是 dofollow（ugc、sponsored 也算 nofollow；脚本只填空，人看到的直接改），
+# noindex = 冷门产品的同类页面会不会被禁止谷歌收录（脚本不填，只由第5步提交前、第6步回访写，见 references/data.md「外链库」noindex），
+# ccg_id = CCG 编号（只有 CCG 外链库的行有，抄进用户外链库原样带着；用户新增的为 None，脚本不编号）
+LIBRARY_FIELDS = ['site', 'verdict', 'industry', 'paid_option', 'group', 'site_type', 'scope', 'how', 'entry_url',
+                  'check', 'reason', 'source', 'checked_at', 'first_seen', 'domain_rank', 'dofollow', 'noindex',
+                  'ccg_id']
 
 
 def library_file_of(verdict: str) -> str:
@@ -96,8 +99,8 @@ def load_libraries(default_files: Dict[str, Path],
     读两层外链库
 
     Returns:
-        (完整外链库, SKILL 默认外链库, 用户外链库里有的外链网站)；
-        完整外链库里的条目是拷贝，原地改它不会动到默认外链库；同一个外链网站以用户外链库为准
+        (完整外链库, CCG 外链库, 用户外链库里有的外链网站)；
+        完整外链库里的条目是拷贝，原地改它不会动到 CCG 外链库；同一个外链网站以用户外链库为准
     """
     default = load_library(default_files)
     user = load_library(user_files)
@@ -124,7 +127,7 @@ def save_library(files: Dict[str, Path], library: Dict[str, dict]):
 def save_user_library(user_files: Dict[str, Path], full: Dict[str, dict], default: Dict[str, dict],
                       user_sites: Set[str]) -> int:
     """
-    完整外链库改完后写回：只写用户外链库（原来就在用户外链库的，加上跟默认外链库不一样了的），默认外链库不动
+    完整外链库改完后写回：只写用户外链库（原来就在用户外链库的，加上跟 CCG 外链库不一样了的），CCG 外链库不动
 
     Returns:
         int: 用户外链库现在有几个外链网站

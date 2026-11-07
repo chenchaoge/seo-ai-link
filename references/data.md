@@ -4,7 +4,7 @@
 
 ## SKILL 默认档案和用户档案
 
-- **SKILL 默认档案**（在 SKILL 目录里，作者给的，所有用户一样）：`scripts/` 程序、`references/` 规则文档、`assets/library/` SKILL 默认外链库、`assets/report/` HTML 报告模板、`assets/templates/` 用户目录和独立站的模板。SKILL 目录里没有任何用户的东西（SKILL.md「原则」第 2 条），SKILL 更新、整个删掉重装都不丢用户档案。
+- **SKILL 默认档案**（在 SKILL 目录里，作者给的，所有用户一样）：`scripts/` 程序、`references/` 规则文档、`assets/library/` CCG 外链库、`assets/report/` HTML 报告模板、`assets/templates/` 用户目录和独立站的模板。SKILL 目录里没有任何用户的东西（SKILL.md「原则」第 2 条），SKILL 更新、整个删掉重装都不丢用户档案。
 - **用户档案**（在用户目录里，每个用户自己的）：独立站资料、提交台账、用户外链库、分析结果（含竞品专属库和日志）、报告。
 
 ## 用户目录
@@ -39,8 +39,10 @@
 每层外链库两个文件，一个外链网站一行（JSONL）：`usable_sites.jsonl` 放可用的（免费类、付费类），`unusable_sites.jsonl` 放明确不可用的。
 
 ```json
-{"site": "aiknow.cc", "verdict": "免费类", "industry": "AI产品工具", "paid_option": null, "group": "直接提交", "site_type": "导航与产品发布类", "scope": "整站", "how": "怎么发外链", "entry_url": "提交入口", "check": "收录条件或要人确认的", "reason": "依据", "source": "提交实测", "checked_at": "2026-10-24", "first_seen": "2026-10-23", "domain_rank": 21, "dofollow": true, "noindex": false}
+{"site": "aiknow.cc", "verdict": "免费类", "industry": "AI产品工具", "paid_option": null, "group": "直接提交", "site_type": "导航与产品发布类", "scope": "整站", "how": "怎么发外链", "entry_url": "提交入口", "check": "收录条件或要人确认的", "reason": "依据", "source": "提交实测", "checked_at": "2026-10-24", "first_seen": "2026-10-23", "domain_rank": 21, "dofollow": true, "noindex": false, "ccg_id": "ccg-0001"}
 ```
+
+- **ccg_id CCG 编号**：CCG 外链库每行一个，格式 `ccg-` 加四位数字，一个外链网站一个号，永远不变（换文件、改结论都不改）。只有作者往 CCG 外链库加新外链网站时才编新号（接着最大的号往下编）；从 CCG 外链库抄进用户外链库的行原样带着，用户自己新增的外链网站留 null。
 
 - **industry 所属行业**：每个外链网站都要有（不可用的也要），判法见 criteria.md「所属行业」。自动预判不判行业，由 AI 判了写进 industries.json，整理结果时并进来（见「所属行业：从挖掘到发外链」）。
 - **group 发外链方式、site_type 业务类型**：免费类才有，定义和取值见 criteria.md「免费类再分两个维度」。group 只有「直接提交」「注册账号提交」两种；site_type 四种（要挂回链或徽章 / 导航与产品发布类 / 社区论坛类 / 自建类），装不下的先问用户要不要加新类型，没点头就留 null。
@@ -57,7 +59,7 @@
 - **paid_option 付费档**：免费类外链网站另有付费档（付费加速、推广位、付费套餐）时写价格和内容，没有就 null。找免费的看 verdict 是免费类；找收费的看 verdict 是付费类，或者 paid_option 有内容。自己的结论和网友经验（比如 web.cafe 投票）在免费、收费上对不上时，不互相否定，记成免费类 + paid_option 两边都算。
 - **只写外链网站本身的事实**：「独立站不符合收录范围」「刚上线的独立站先跳过」这类跟独立站有关的原因只写在提交台账；外链网站是从哪个竞品挖出来的看分析结果目录（报告里会算）；独立站有没有被收录看提交台账。外链网站会变，提交前还要再打开看一眼，跟库里不一样就更新。
 - **核对完要做的**：每核对完一个外链网站（第2、3步复核，第5步提交或跳过），把它本身的情况写进用户外链库，source 写人工复核或提交实测，checked_at 写核对日期，how 写清楚怎么发，group、site_type、industry 跟实际不符就改、空着就填上。
-- **怎么改外链库**：只改用户外链库，SKILL 默认外链库不动（作者维护）。这个外链网站在用户外链库里有，就直接改那一行；只在 SKILL 默认外链库里有，就把那一行原样抄进用户外链库的同名文件再改。结论从可用变不可用时，在用户外链库里把这行挪到另一个文件。
+- **怎么改外链库**：只改用户外链库，CCG 外链库不动（作者维护）。这个外链网站在用户外链库里有，就直接改那一行；只在 CCG 外链库里有，就把那一行原样抄进用户外链库的同名文件再改。结论从可用变不可用时，在用户外链库里把这行挪到另一个文件。
 
 ## 竞品专属库
 

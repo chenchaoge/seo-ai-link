@@ -2,10 +2,10 @@
 外链报告数据生成
 报告模板 assets/report/ 按用户目录的样子摆：外链报告.html 在第一层，样式、脚本和数据在 data/report/
 - 用户报告（菜单 5）：外链报告.html 拷到用户目录第一层，data/report/ 拷到用户目录的 data/report/，数据写进 data/report/report_data.js：
-  完整外链库（SKILL 默认外链库 + 用户外链库）、各独立站的提交台账、外链网站是从哪个竞品挖出来的（分析结果目录）；
+  完整外链库（CCG 外链库 + 用户外链库）、各独立站的提交台账、外链网站是从哪个竞品挖出来的（分析结果目录）；
   每个外链网站带所属行业和对各独立站的赛道关系，行业清单和赛道大类一起写进去给页面画行业组成；
   台账每行和外链库每个外链网站（对各独立站）都带发外链原则的档（tier）和排序值（order，越小越先发）
-- SKILL 默认网页（菜单 8）：只用 SKILL 默认外链库，写进模板自己的 data/report/report_data.js，直接打开模板就能看
+- SKILL 默认网页（菜单 8）：只用 CCG 外链库，写进模板自己的 data/report/report_data.js，直接打开模板就能看
 页面直接读这个 JS 文件（双击打开就能看，不用起服务）；菜单 10 起本机网页服务时，这个文件每次请求现算（见 web_app.py）。
 报告里不放密码、cookie；邮箱只留前两位。
 """
@@ -28,18 +28,19 @@ from modules.submit_policy import TIERS, ledger_facts, priority_order, tier_of
 from modules.user_space import UPDATE_NOTES_FILE, UserSpace
 
 DATA_FILE_NAME = 'report_data.js'
-DEFAULT_NOTES_PATH = ASSETS_DIR / 'library' / UPDATE_NOTES_FILE  # SKILL 默认外链库的更新备注（作者改默认外链库时写）
+DEFAULT_NOTES_PATH = ASSETS_DIR / 'library' / UPDATE_NOTES_FILE  # CCG 外链库的更新备注（作者改 CCG 外链库时写）
 JS_VAR = 'REPORT_DATA'
 TEMPLATE = UserSpace(REPORT_TEMPLATE_DIR)  # 模板目录和用户目录摆法一样，借 UserSpace 算位置
 LOGO_FILE = 'logo.png'
 PROFILE_PUBLIC_FIELDS = ['site', 'url', 'name', 'launch_date', 'industry']  # 独立站 profile 里只取这些公开字段
 CHECK_TEXT_FIELDS = ['evidence']
 STATUS_INCLUDED = '已收录'
-ORIGIN_DEFAULT = 'SKILL 默认外链库'
+ORIGIN_DEFAULT = 'CCG 外链库'
 ORIGIN_USER = '用户外链库'
 MAX_PAGES = 3  # 每个外链网站最多列几个看过的页面
-LIBRARY_ITEM_FIELDS = ('site', 'verdict', 'industry', 'group', 'site_type', 'scope', 'how', 'entry_url', 'check', 'reason',
-                       'source', 'checked_at', 'first_seen', 'paid_option', 'domain_rank', 'dofollow', 'noindex')
+LIBRARY_ITEM_FIELDS = ('site', 'verdict', 'industry', 'group', 'site_type', 'scope', 'how', 'entry_url', 'check',
+                       'reason', 'source', 'checked_at', 'first_seen', 'paid_option', 'domain_rank', 'dofollow',
+                       'noindex')
 CROSS_GROUP = '不分行业'  # 综合导航站、综合论坛博客不属于任何赛道大类，报告里单列一组
 EMAIL_RE = re.compile(r'([A-Za-z0-9._%+-]{1,2})[A-Za-z0-9._%+-]*@([A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,})')
 PASSWORD_MASK = '******'
@@ -291,7 +292,8 @@ def build_user_report(space: UserSpace) -> Tuple[dict, List[str], dict]:
         entries = build_ledger_entries(load_ledger(path), library, profile['industry']) if path.exists() else []
         for entry in entries:
             used_by.setdefault(entry['site'], {})[site] = entry['status']
-        sites.append({**profile, 'ledger_updated_at': _file_time([path]), 'update_note': mask_text(site_notes.get(site)),
+        sites.append({**profile, 'ledger_updated_at': _file_time([path]),
+                      'update_note': mask_text(site_notes.get(site)),
                       'entries': entries})  # 右上角：最新更新日期 = 台账文件的改动时间，备注 = AI 写的这次更新了什么
     sites.sort(key=lambda s: -len(s['entries']))  # 台账条目多的排前面
     site_industries = {s['site']: s['industry'] for s in sites}
@@ -306,10 +308,10 @@ def build_user_report(space: UserSpace) -> Tuple[dict, List[str], dict]:
 
 def generate_default_report() -> dict:
     """
-    菜单 8：刷新 SKILL 自带的外链库网页，只用 SKILL 默认外链库（不读任何用户目录）
+    菜单 8：刷新 SKILL 自带的外链库网页，只用 CCG 外链库（不读任何用户目录）
 
     Returns:
-        {'path': 数据文件, 'index': 网页, 'library': 默认外链库外链网站数}
+        {'path': 数据文件, 'index': 网页, 'library': CCG 外链库外链网站数}
     """
     library = load_library(DEFAULT_LIBRARY_FILES)
     library_sites = build_library_sites(library, set(), {}, {}, {})

@@ -1,5 +1,5 @@
 /* 第一部分：外链库报告。回答「有多少外链网站能用、结论怎么来的、怎么发最省事、各独立站发了多少」
-   完整外链库 = SKILL 默认外链库 + 用户外链库；没有独立站数据（SKILL 自带的网页、刚建好的用户目录）时不显示跟独立站有关的部分 */
+   完整外链库 = CCG 外链库 + 用户外链库；没有独立站数据（SKILL 自带的网页、刚建好的用户目录）时不显示跟独立站有关的部分 */
 (function () {
   'use strict';
   const R = window.R, C = window.Charts;
@@ -10,7 +10,7 @@
   const NOT_USED_COLOR = 'var(--grid)';
   const OTHER_SOURCE = '其他来源（如 web.cafe 投票）';
   const USED_ANY = '至少一个独立站发过';
-  const ORIGIN_DEFAULT = 'SKILL 默认外链库';
+  const ORIGIN_DEFAULT = 'CCG 外链库';
   const ORIGIN_USER = '用户外链库';
 
   const shortName = (site) => site.split('.')[0];
@@ -19,12 +19,12 @@
 
   // userReport：用户目录的报告（还没有独立站时也是）；否则是 SKILL 自带的网页
   function header(userReport, hasSites, data) {
-    const eyebrow = userReport ? (hasSites ? '第一部分 · 外链库' : '外链库') : 'SKILL 默认外链库';
+    const eyebrow = userReport ? (hasSites ? '第一部分 · 外链库' : '外链库') : 'CCG 外链库';
     return h('div', { class: 'view-head' }, h('div', null,
       h('div', { class: 'eyebrow' }, eyebrow),
       h('h1', { class: 'view-title' }, '外链库：哪些外链网站能给独立站留链接'),
       h('p', { class: 'view-desc' }, userReport
-        ? `外链网站从竞品的外链里挖出来，有的脚本判过、有的人看过、有的真提交过。完整外链库 = SKILL 默认外链库 + 用户外链库，同一个外链网站以用户外链库为准。先看能用的有多少、每个结论是怎么得出的、怎么发最省事${hasSites ? '、各独立站发了多少' : ''}，最后在清单里按条件筛。`
+        ? `外链网站从竞品的外链里挖出来，有的脚本判过、有的人看过、有的真提交过。完整外链库 = CCG 外链库 + 用户外链库，同一个外链网站以用户外链库为准。先看能用的有多少、每个结论是怎么得出的、怎么发最省事${hasSites ? '、各独立站发了多少' : ''}，最后在清单里按条件筛。`
         : '这是 SKILL 自带的外链库：外链网站从竞品的外链里挖出来，有的脚本判过、有的人看过、有的真提交过。先看能用的有多少、每个结论是怎么得出的、怎么发最省事，最后在清单里按条件筛。')),
       R.updatedBox(data.library_updated_at, data.library_note));
   }
