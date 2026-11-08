@@ -1,6 +1,6 @@
-# seo-ai-link v1.0.1 更新日期：1108
+# seo-ai-link v1.0.2 更新日期：1108
 
-[![Version](https://img.shields.io/badge/version-1.0.1-2563EB.svg?style=flat-square)](VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.2-2563EB.svg?style=flat-square)](VERSION)
 [![License](https://img.shields.io/badge/license-All%20Rights%20Reserved-16A34A.svg?style=flat-square)](LICENSE)
 
 <br>
@@ -16,6 +16,7 @@
 4. 更准地判断外链是 dofollow 还是 nofollow
 5. 外链报告显示最后更新日期和这次更新了什么
 6. 用户的账号、邮箱等私人信息一律不写进 SKILL 目录
+7. 增加发外链的前置条件检查和解决（例：自动完成类似点赞换积分才能发布的事）
 
 ![外链报告网页：外链库部分](assets/screenshots/library-report.png)
 
@@ -58,7 +59,7 @@ seo-ai-link 不提供批量群发、链接农场（Link Farm）、站群（PBN�
 
 ## CCG 外链库（内置）
 
-CCG 外链库由陈朝歌实测整理。当前以 AI 产品工具和科技赛道为主。v1.0.1 共有可用外链网站（免费类 + 付费类）206 个，按所属行业分布如下：
+CCG 外链库由陈朝歌实测整理。当前以 AI 产品工具和科技赛道为主。v1.0.2 共有可用外链网站（免费类 + 付费类）206 个，按所属行业分布如下：
 
 | 所属行业 | 可用 | 其中免费 |
 | --- | --- | --- |
