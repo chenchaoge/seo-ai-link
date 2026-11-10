@@ -1,5 +1,5 @@
 /* 第二部分：每个独立站的外链发布情况（所有独立站同一个模板）。
-   回答「拿到了多少外链、哪些在等审核、哪些要人动手、跳过了哪些、外链库里还有多少没发」 */
+   回答「外链库里的免费类各赛道还能发多少、拿到了多少外链、哪些在等审核、哪些要人动手、跳过了哪些、外链库里还有多少没发」 */
 (function () {
   'use strict';
   const R = window.R, C = window.Charts;
@@ -92,6 +92,122 @@
       R.kpi('收录率', R.pct(included.length, submitted), `提交过 ${submitted} 个，收录 ${included.length} 个`, { color: 'var(--st-good)' }),
       R.kpi('要人动手', String(actions.length), `${R.shortDate(today)} 已提交 ${todayN} 个，每天最多 ${limit} 个`, { color: 'var(--st-warn)' }),
       R.kpi('跳过', String(by.get('跳过') || 0), `台账一共 ${entries.length} 个外链网站`, { color: 'var(--st-skip)' }));
+  }
+
+  // ---------- 免费类外链网站：这个独立站申请了多少、还剩多少，按赛道关系分（状态取外链库 used_by，跟台账一致） ----------
+  const TRACK_HINT = {
+    同赛道: '行业直接相关', 相近赛道: '行业间接相关', 不分行业: '综合类，不挑行业', 其他赛道: '行业不相干', 行业未标: '外链网站还没标行业',
+  };
+  const FRESH_FILL = 'repeating-linear-gradient(135deg, var(--free) 0 3px, var(--accent-wash) 3px 6px)';  // 还没进台账：斜纹蓝，跟等审核的实心蓝分开
+  const COVER_PARTS = [
+    { key: '已收录', kind: 'applied', color: 'var(--st-good)', desc: '申请过，对方已经放上链接', test: (st) => st === '已收录' },
+    { key: '等审核', kind: 'applied', color: 'var(--st-info)', desc: '申请过，在等对方审核（台账状态已提交）', test: (st) => st === '已提交' },
+    { key: '被拒或未收录', kind: 'applied', color: 'var(--st-bad)', desc: '申请过，对方拒了，或回访查满还没收录', test: (st) => st === '被拒' || st === '未收录' },
+    { key: '跳过', kind: 'skip', color: 'var(--st-skip)', desc: '决定不发', test: (st) => st === '跳过' },
+    { key: '台账里待做', kind: 'left', color: 'var(--st-warn)', desc: '进了台账还没交（待提交、待登录）', test: (st) => st === '待提交' || st === '待登录' },
+    { key: '还没进台账', kind: 'left', color: FRESH_FILL, desc: '外链库里有，还没给这个独立站安排', test: (st) => !st },
+  ];
+
+  function coverStats(list, site) {
+    const part = (key) => COVER_PARTS.find((p) => p.key === key);
+    const counts = Object.fromEntries(COVER_PARTS.map((p) => [p.key, list.filter((s) => p.test(s.used_by[site.site])).length]));
+    const sumKind = (kind) => COVER_PARTS.filter((p) => p.kind === kind).reduce((a, p) => a + counts[p.key], 0);
+    const left = list.filter((s) => part('台账里待做').test(s.used_by[site.site]) || part('还没进台账').test(s.used_by[site.site]));
+    return {
+      n: list.length, counts, applied: sumKind('applied'), skipped: sumKind('skip'), left: sumKind('left'),
+      backlink: left.filter((s) => s.site_type === '要挂回链或徽章').length,
+    };
+  }
+
+  // 小方块：标题、大数字、一条分段条、每段一行（色块 + 名称 + 数量），底部一句说明
+  const TRACK_COLOR = { 同赛道: 'var(--seq-6)', 相近赛道: 'var(--seq-4)', 不分行业: 'var(--seq-3)', 其他赛道: 'var(--seq-2)' };  // 越相关颜色越深
+  function statTile(title, value, parts, foot) {
+    return h('div', { class: 'kpi stat-tile' },
+      h('div', { class: 'stat-tile-head' }, title),
+      h('div', { class: 'kpi-value' }, String(value), h('small', null, '个')),
+      C.segBar(parts, { thin: true, legend: false, title }),
+      h('div', { class: 'stat-rows' }, parts.map((p) => h('div', { class: `stat-row${p.value ? '' : ' zero'}` },
+        h('span', { class: 'legend-swatch', style: { background: p.color } }), h('span', null, p.name), h('span', { class: 'n' }, String(p.value))))),
+      h('div', { class: 'stat-foot' }, foot));
+  }
+
+  // 每种赛道关系是什么、包括哪些行业（行业后面的数 = 外链库里这个行业的免费类个数）
+  function trackGuide(rows, free, trackOf, site, industries) {
+    const group = (industries.find((x) => x.name === site.industry) || {}).group;
+    const members = (g, exclude) => industries.filter((x) => x.group === g && x.name !== exclude).map((x) => x.name);
+    const defs = {
+      同赛道: `外链网站的所属行业跟这个独立站一样（${site.industry || '独立站还没标行业'}）。`,
+      相近赛道: group ? `行业不同，但跟这个独立站同属「${group}」这个赛道大类。` : '行业不同，但同属一个赛道大类。',
+      不分行业: '综合导航站、综合论坛博客，不限行业，哪个独立站都能发。',
+      其他赛道: '除了上面三种，剩下的行业都算其他赛道，跟这个独立站不相干；发之前要先问用户。',
+      行业未标: '外链网站还没标所属行业，赛道关系算不出来。',
+    };
+    const always = { 相近赛道: group ? members(group, site.industry) : [], 不分行业: members('不分行业') };  // 这两种把该有的行业都列出来，外链库里没有的记 0
+    return h('div', { class: 'track-guide' },
+      h('div', { class: 'track-guide-title' }, `${rows.length} 种赛道关系分别是什么`, h('span', null, '行业后面的数 = 外链库里这个行业的免费类外链网站个数')),
+      h('div', { class: 'track-guide-grid' }, rows.map((r) => {
+        const counts = R.countBy(free.filter((s) => trackOf(s) === r.track), R.industryOf);
+        (always[r.track] || []).forEach((name) => { if (!counts.has(name)) counts.set(name, 0); });
+        const list = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+        return h('div', { class: 'track-guide-item' },
+          h('div', { class: 'track-left-name' }, r.track, h('span', null, TRACK_HINT[r.track] || '')),
+          h('p', null, defs[r.track] || ''),
+          h('div', { class: 'track-guide-tags' }, list.map(([name, n]) => h('span', { class: `track-tag${n ? '' : ' zero'}` }, name, h('b', null, `${n} 个`)))));
+      })));
+  }
+
+  function freeCoverageSection(site, lib, tracks, industries) {
+    const free = lib.filter((s) => s.verdict === '免费类');
+    const trackOf = (s) => (s.tracks || {})[site.site] || R.INDUSTRY_UNSET;
+    const all = coverStats(free, site);
+    const rows = tracks.map((t) => ({ track: t, ...coverStats(free.filter((s) => trackOf(s) === t), site) })).filter((r) => r.n);
+    const progress = (x) => R.pct(x.applied, x.n - x.skipped);  // 申请进度 = 申请过 ÷（一共 − 跳过）
+
+    const tiles = h('div', { class: 'kpis kpis-4' },
+      h('div', { class: 'kpi hero track-left' },  // 还能申请：按赛道关系拆成几个中总结，不放总数
+        h('h3', { class: 'track-left-title' }, '现有外链库还能发：'),
+        h('div', { class: 'track-left-grid' }, rows.map((r) => h('div', { class: 'track-left-item' },
+          h('div', { class: 'track-left-name' }, r.track, h('span', null, TRACK_HINT[r.track] || '')),
+          h('div', { class: 'track-left-value' }, String(r.left), h('small', null, '个')),
+          h('div', { class: 'track-left-sub' }, `台账里待做 ${r.counts['台账里待做']} · 还没进台账 ${r.counts['还没进台账']}`))))),
+      statTile('申请过', all.applied, COVER_PARTS.filter((p) => p.kind === 'applied').map((p) => ({ name: p.key, value: all.counts[p.key], color: p.color })),
+        `收录率 ${R.pct(all.counts['已收录'], all.applied)}（已收录 ÷ 申请过）`),
+      statTile('跳过', all.skipped, rows.map((r) => ({ name: r.track, value: r.skipped, color: TRACK_COLOR[r.track] || 'var(--no)' })),
+        '决定不发的；原因看下面「跳过了哪些、为什么」'),
+      statTile('免费类一共', all.n, rows.map((r) => ({ name: r.track, value: r.n, color: TRACK_COLOR[r.track] || 'var(--no)' })),
+        `申请进度 ${progress(all)}（申请过 ÷ 不算跳过的）`));
+
+    const bars = C.hbars(rows.map((r) => ({
+      label: `${r.track} · ${TRACK_HINT[r.track] || ''}`,
+      segs: COVER_PARTS.map((p) => ({ name: p.key, value: r.counts[p.key], color: p.color })),
+      value: `还剩 ${r.left}`,
+      sub: `申请过 ${r.applied}`,
+      tipSub: `一共 ${r.n} 个：申请过 ${r.applied}、跳过 ${r.skipped}、还能申请 ${r.left}（台账里待做 ${r.counts['台账里待做']}、还没进台账 ${r.counts['还没进台账']}）`,
+    })), { labelW: '196px', valueW: '140px', tipValue: (x) => `${x.value} 个` });
+
+    const num = (v) => h('td', { class: 'num' }, String(v));
+    const tableRow = (label, hint, x, cls) => h('tr', { class: cls || null },
+      h('td', { class: 'site' }, label), h('td', { class: 'nowrap dim' }, hint),
+      num(x.n), num(x.applied), num(x.counts['已收录']), num(x.skipped),
+      h('td', { class: 'num strong' }, String(x.left)), num(x.counts['台账里待做']), num(x.counts['还没进台账']),
+      num(progress(x)));
+    const heads = ['赛道关系', '跟独立站的关系', '一共', '申请过', '其中已收录', '跳过', '还能申请', '其中台账里待做', '其中还没进台账', '申请进度'];
+    const table = h('div', { class: 'table-wrap', style: { marginTop: '18px' } },
+      h('table', { class: 'data' },
+        h('thead', null, h('tr', null, heads.map((x, i) => h('th', { class: i > 1 ? 'num' : null }, x)))),
+        h('tbody', null, rows.map((r) => tableRow(r.track, TRACK_HINT[r.track] || '', r)), tableRow('合计', '', all, 'total'))));
+
+    return h('div', { class: 'ccg-cover' },
+      R.sectionTitle('免费类外链网站：申请了多少、还剩多少', `外链库里现在判成免费类的 ${all.n} 个外链网站，按跟这个独立站的赛道关系分开看（这个独立站的所属行业：${site.industry || '还没标'}）`),
+      tiles,
+      h('div', { style: { marginTop: '18px' } }, R.card('按赛道关系看：申请了多少、还剩多少', '条越长 = 这类外链网站越多；鼠标停在条上看每段的数量',
+        bars,
+        C.legend(COVER_PARTS.map((p) => ({ name: p.key, color: p.color }))),
+        trackGuide(rows, free, trackOf, site, industries),
+        table,
+        R.note(h('b', null, '怎么算的：'), '只算外链库现在判成免费类的。申请过 = 台账状态是已提交、已收录、被拒、未收录；还能申请 = 台账里待提交、待登录的，加上还没进这个独立站台账的；跳过的不算还能申请。',
+          all.backlink ? `还能申请的 ${all.left} 个里，有 ${all.backlink} 个要挂回链或徽章，新站默认先不做。` : '',
+          '其他赛道的发之前要先问用户。还没进台账的清单在下面「外链库里还没给这个独立站发过的免费类外链网站」，可以按赛道关系排序。'))));
   }
 
   function statusCard(entries) {
@@ -432,6 +548,7 @@
     root.appendChild(siteTabs(sites, site, onSwitch));
     root.appendChild(siteHero(site, data.today, data.industries));
     root.appendChild(kpis(site, entries, data.today, data.daily_limit));
+    root.appendChild(freeCoverageSection(site, data.library, data.tracks, data.industries));
     root.appendChild(R.sectionTitle('进度总览', '台账里各状态的数量，以及从提交到收录的转化'));
     root.appendChild(h('div', { class: 'grid grid-2' }, statusCard(entries), funnelCard(entries)));
     root.appendChild(h('div', { style: { marginTop: '18px' } }, trendCard(entries, data.today)));

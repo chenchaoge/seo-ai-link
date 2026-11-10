@@ -195,10 +195,11 @@ main { max-width: 1320px; margin: 0 auto; padding: 28px 28px 64px; }
 }
 .view-title { font-size: 26px; font-weight: 700; margin: 0; letter-spacing: 0.3px; }
 .view-desc { color: var(--ink-2); margin: 6px 0 0; max-width: 760px; }
-.view-updated { margin-left: auto; align-self: flex-start; text-align: right; }  /* 板块右上角 */
+.view-head > div:first-child { flex: 1 1 480px; min-width: 0; align-self: flex-start; }  /* 标题区占剩下的宽度、顶部对齐，右上角再长也挤不走它 */
+.view-updated { margin-left: auto; align-self: flex-start; text-align: right; flex: 0 1 360px; max-width: 360px; }  /* 板块右上角，最宽 360px，备注长了就折行 */
 .view-updated .label { font-size: 12px; font-weight: 600; letter-spacing: 1px; color: var(--ink-2); }
 .view-updated .day { font-size: 34px; font-weight: 700; line-height: 1.15; color: var(--ink-1); font-variant-numeric: tabular-nums; }
-.view-updated .note { font-size: 12px; color: var(--ink-3); white-space: nowrap; margin-top: 2px; }
+.view-updated .note { font-size: 13px; line-height: 1.5; color: var(--ink-3); margin-top: 4px; overflow-wrap: anywhere; }
 
 .section-title {
   display: flex;
@@ -244,6 +245,53 @@ main { max-width: 1320px; margin: 0 auto; padding: 28px 28px 64px; }
 /* ---------- 核心数字 ---------- */
 .kpis { display: grid; grid-template-columns: 1.6fr repeat(4, minmax(0, 1fr)); gap: 14px; }
 @media (max-width: 1100px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+/* ---------- 各独立站：免费类外链网站申请了多少、还剩多少（整块的样式都在 .ccg-cover 下） ---------- */
+.ccg-cover .kpis-4 { grid-template-columns: 2.2fr repeat(3, minmax(0, 1fr)); }
+@media (max-width: 1100px) {
+  .ccg-cover .kpis-4 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .ccg-cover .track-left { grid-column: 1 / -1; }  /* 窄屏时「现有外链库还能发」独占一行 */
+}
+@media (max-width: 640px) { .ccg-cover .kpis-4 { grid-template-columns: minmax(0, 1fr); } }
+
+/* 现有外链库还能发：每个赛道一个中总结 */
+.ccg-cover .track-left-title { margin: 0; font-size: 20px; font-weight: 700; color: var(--ink-1); letter-spacing: 0.3px; }
+.ccg-cover .track-left-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 14px; margin-top: 10px; }
+.ccg-cover .track-left-item { padding: 10px 14px; border-radius: 12px; background: var(--wash); min-width: 0; }
+.ccg-cover .track-left-name { font-size: 15px; font-weight: 650; color: var(--ink-1); }
+.ccg-cover .track-left-name span { font-size: 13px; font-weight: 400; color: var(--ink-3); margin-left: 8px; }
+.ccg-cover .track-left-value { font-size: 34px; font-weight: 650; line-height: 1.15; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.ccg-cover .track-left-value small { font-size: 14px; font-weight: 500; color: var(--ink-3); margin-left: 4px; }
+.ccg-cover .track-left-sub { font-size: 13px; color: var(--ink-2); margin-top: 2px; }
+
+/* 申请过、跳过、免费类一共：标题 + 大数字 + 分段条 + 明细行，说明贴底 */
+.ccg-cover .stat-tile { display: flex; flex-direction: column; }
+.ccg-cover .stat-tile-head { font-size: 16px; font-weight: 650; color: var(--ink-1); }
+.ccg-cover .stat-tile .kpi-value { font-size: 34px; margin-top: 4px; }
+.ccg-cover .stat-tile .segbar { margin-top: 10px; }
+.ccg-cover .stat-rows { display: grid; gap: 8px; margin: 14px 0 14px; }
+.ccg-cover .stat-row { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; align-items: center; gap: 8px; font-size: 14px; color: var(--ink-2); }
+.ccg-cover .stat-row .n { font-weight: 650; color: var(--ink-1); font-variant-numeric: tabular-nums; }
+.ccg-cover .stat-row.zero, .ccg-cover .stat-row.zero .n { color: var(--ink-3); font-weight: 400; }
+.ccg-cover .stat-foot { margin-top: auto; padding-top: 10px; border-top: 1px solid var(--border); font-size: 13px; line-height: 1.5; color: var(--ink-2); }
+
+/* 每种赛道关系是什么、包括哪些行业 */
+.ccg-cover .track-guide { margin-top: 20px; }
+.ccg-cover .track-guide-title { font-size: 15px; font-weight: 650; color: var(--ink-1); }
+.ccg-cover .track-guide-title span { font-size: 13px; font-weight: 400; color: var(--ink-3); margin-left: 10px; }
+.ccg-cover .track-guide-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 10px; }
+@media (max-width: 1100px) { .ccg-cover .track-guide-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .ccg-cover .track-guide-grid { grid-template-columns: minmax(0, 1fr); } }
+.ccg-cover .track-guide-item { padding: 12px 14px; border-radius: 12px; background: var(--wash); min-width: 0; }
+.ccg-cover .track-guide-item p { margin: 6px 0 10px; font-size: 13.5px; line-height: 1.55; color: var(--ink-2); }
+.ccg-cover .track-guide-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.ccg-cover .track-tag { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; background: var(--card); border: 1px solid var(--border); font-size: 13px; color: var(--ink-1); }
+.ccg-cover .track-tag b { font-weight: 600; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.ccg-cover .track-tag.zero, .ccg-cover .track-tag.zero b { color: var(--ink-3); }
+
+/* 按赛道的数字表：表头数字列右对齐，合计行加粗，还能申请一列突出 */
+.ccg-cover table.data thead th.num { text-align: right; }
+.ccg-cover table.data td.strong { font-weight: 700; color: var(--ink-1); }
+.ccg-cover table.data tr.total td { font-weight: 650; background: var(--card-2); border-bottom: none; }
 .kpi {
   background: var(--card);
   border: 1px solid var(--border);
